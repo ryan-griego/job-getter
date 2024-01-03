@@ -8,8 +8,8 @@
         >
     <v-data-table
       :headers="headers"
-      :items="patients"
-      :sort-by="[{ key: 'name', order: 'asc' }]"
+      :items="jobs"
+      :sort-by="[{ key: 'companyUrl', order: 'asc' }]"
     >
       <template v-slot:top>
         <v-toolbar flat>
@@ -32,32 +32,32 @@
                   <v-row>
                     <v-col cols="12" sm="6" md="4">
                       <v-text-field
-                        v-model="editedItem.name"
-                        label="Patient name"
+                        v-model="editedItem.companyUrl"
+                        label="Patient companyUrl"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
                       <v-text-field
                         v-model="editedItem.calories"
-                        label="Email"
+                        label="Company Name"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
                       <v-text-field
                         v-model="editedItem.fat"
-                        label="Medication"
+                        label="Job Title"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
                       <v-text-field
                         v-model="editedItem.carbs"
-                        label="Gender"
+                        label="Job Location"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
                       <v-text-field
-                        v-model="editedItem.condition"
-                        label="Condition"
+                        v-model="editedItem.postedAt"
+                        label="Posted At"
                       ></v-text-field>
                     </v-col>
                   </v-row>
@@ -101,7 +101,7 @@
           mdi-pencil
         </v-icon>
         <v-icon size="small" @click="deleteItem(item)"> mdi-delete </v-icon>
-        <v-icon size="small" @click="SendEmail(item)"> mdi-mail </v-icon>
+        <v-icon size="small" @click="sendEmail(item)"> mdi-mail </v-icon>
       </template>
       <template v-slot:no-data>
         <v-btn color="primary" @click="initialize"> Reset </v-btn>
@@ -123,47 +123,49 @@
       dialogDelete: false,
       headers: [
         {
-          title: 'Name',
+          title: 'CompanyUrl',
           align: 'start',
           sortable: false,
-          key: 'name',
+          key: 'companyUrl',
         },
-        { title: 'Email', key: 'email' },
-        { title: 'Medication', key: 'medication' },
-        { title: 'Gender', key: 'gender' },
-        { title: 'Condition', key: 'condition' },
+        { title: 'Company Name', key: 'companyName' },
+        { title: 'Job Title', key: 'jobTitle' },
+        { title: 'Job Location', key: 'jobLocation' },
+        { title: 'Posted At', key: 'postedAt' },
+        { title: 'Job Poster', key: 'jobPoster' },
+        { title: 'Job Poster Email', key: 'jobPosterEmail' },
         { title: 'Actions', key: 'actions', sortable: false },
       ],
-      patients: [],
+      jobs: [],
       editedIndex: -1,
       editedItem: {
-        name: '',
-        email: '',
-        medication: '',
-        gender: '',
-        condition: 'Diabetes',
+        companyUrl: '',
+        companyName: '',
+        jobTitle: '',
+        jobLocation: '',
+        postedAt: '',
       },
       defaultItem: {
-        name: '',
-        email: '',
-        medication: '',
-        gender: '',
-        condition: 'Diabetes',
+        companyUrl: '',
+        companyName: '',
+        jobTitle: '',
+        jobLocation: '',
+        postedAt: '',
       },
        msg: {
       "personalizations": [
         {
           to: [
             {
-              email: "test@test.com",
-      name: "Name"
+              companyName: "test@test.com",
+      companyUrl: "CompanyUrl"
             }
           ]
         }
       ],
       "from": {
-        email: "app@myappdomain.xyz",
-        name: "Ryan Griego - Web Developer"
+        companyName: "app@myappdomain.xyz",
+        companyUrl: "Ryan Griego - Web Developer"
       },
       "subject": "Test message!",
       "content": [
@@ -201,27 +203,33 @@
 
     methods: {
       initialize() {
-        this.patients = [
+        this.jobs = [
           {
-            name: 'Johnny',
-            email: 'ryangriego@gmail.com',
-            medication: 'Ozempic',
-            gender: 'male',
-            condition: 'Diabetes',
+            companyUrl: 'https://www.linkedin.com/company/snapsupplements',
+            companyName: 'Snap Supplements®',
+            jobTitle: 'Copywriter',
+            jobLocation: 'male',
+            postedAt: 'Vancouver, WA',
+            jobPoster: 'Alberto Simpson',
+            jobPosterEmail: 'anastasia@snapsupplements.com'
           },
           {
-            name: 'Lisa',
-            email: 'ryangriego@gmail.com',
-            medication: 'Ozempic',
-            gender: 'female',
-            condition: 'Diabetes',
+            companyUrl: 'https://www.linkedin.com/company/vysystems',
+            companyName: 'VySystems',
+            jobTitle: 'Technical Writer',
+            jobLocation: 'female',
+            postedAt: 'Corvallis, OR',
+            jobPoster: 'Alberto Simpson',
+            jobPosterEmail: 'vasanth@vysystems.com'
           },
           {
-            name: 'Mark',
-            email: 'ryangriego@gmail.com',
-            medication: 'Ozempic',
-            gender: 'male',
-            condition: 'Diabetes',
+            companyUrl: 'https://www.linkedin.com/company/wellspring-international-education',
+            companyName: 'Wellspring International Education',
+            jobTitle: 'Graphic Designer/Marketing Specialist – Marketing',
+            jobLocation: 'male',
+            postedAt: 'Boulder, CO',
+            jobPoster: 'Alberto Simpson',
+            jobPosterEmail: 'darby.simpson@wellspringinternational.com'
           },
         ]
       },
@@ -229,46 +237,46 @@
 
 
       editItem(item) {
-        this.editedIndex = this.patients.indexOf(item)
+        this.editedIndex = this.jobs.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
 
       deleteItem(item) {
-        this.editedIndex = this.patients.indexOf(item)
+        this.editedIndex = this.jobs.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialogDelete = true
       },
 
-    async SendEmail(item) {
+    async sendEmail(item) {
       let html = ""
 
-      let name =  item.name;
-      let medication = item.medication;
-      let gender = item.gender;
-      let condition = item.condition;
-      heroImage = `src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1703726366/LMD_${gender}.jpg"`;
+      let companyUrl =  item.companyUrl;
+      let jobTitle = item.jobTitle;
+      let jobLocation = item.jobLocation;
+      let postedAt = item.postedAt;
+
 
       let msg = {
         "personalizations": [
           {
             to: [
               {
-                email: "ryangriego@gmail.com",
-      name: "Name"
+                companyName: "ryangriego@gmail.com",
+      companyUrl: "CompanyUrl"
               }
             ]
           }
         ],
         "from": {
-          email: "ryangriego@gmail.com",
-          name: "Ryan Griego / Web Developer"
+          companyName: "ryangriego@gmail.com",
+          companyUrl: "Ryan Griego / Web Developer"
         },
-        "subject": `Recently applicant for ${medication} at ${gender} - a few resources to get to know me`,
+        "subject": `Recently applicant for ${jobTitle} at ${jobLocation} - a few resources to get to know me`,
         "content": [
           {
             type: "text/plain",
-            value: `Recently applicant for ${medication} at ${gender} - a few resources to get to know me`
+            value: `Recently applicant for ${jobTitle} at ${jobLocation} - a few resources to get to know me`
           },
           {
             type: "text/html",
@@ -283,7 +291,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!--<![endif]-->
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta companyUrl="viewport" content="width=device-width, initial-scale=1">
   <style type="text/css">
     #outlook a {
       padding: 0;
@@ -378,7 +386,7 @@
   </style>
   <style type="text/css">
     @media only screen and (max-width: 480px) {
-      .emailImage {
+      .companyNameImage {
         height: auto !important;
         max-width: 600px !important;
         width: 100% !important;
@@ -495,7 +503,7 @@
                             <tr>
                             <td>
                               <a href="https://www.ryangriego.com/" target="_blank">
-                                <img alt="Ryan Griego logo" height="auto" class="emailImage"
+                                <img alt="Ryan Griego logo" height="auto" class="companyNameImage"
                                   src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1703108432/lifemd-logo_ecac59.png"
                                   style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" />
                               </a>
@@ -575,9 +583,9 @@
                         style="font-size:0px;padding:10px 25px;padding-top:40px;padding-right:25px;padding-bottom:10px;padding-left:25px;word-break:break-word;">
                         <div
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:40px;line-height:1;text-align:left;color:#ffffff;">
-                          <p style="font-size: 22px;line-height: 1.8rem">Dear ${name},</p>
+                          <p style="font-size: 22px;line-height: 1.8rem">Dear ${companyUrl},</p>
                           <p style="font-size: 13px;line-height: 1.2rem;">
-Your commitment to ${condition} is commendable and showcases your inner strength and resilience. Each healthy choice in addition to ${medication} is a step toward a brighter, more vibrant future.
+Your commitment to ${postedAt} is commendable and showcases your inner strength and resilience. Each healthy choice in addition to ${jobTitle} is a step toward a brighter, more vibrant future.
 Wishing you continued success and good health,<br /></p>
                           <!-- <p>Try Me</p>
           <p>FREE</p> -->
@@ -618,10 +626,6 @@ Wishing you continued success and good health,<br /></p>
                           <tbody>
                             <tr>
                               <td style="width:400px;">
-                                <img alt="Doctors" height="auto"
-                                  ${heroImage}
-                                  style="border:none;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;"
-                                  width="400" />
                               </td>
                             </tr>
                           </tbody>
@@ -784,6 +788,7 @@ Call me maybe?
           }
         ]
       }
+      console.log("log the msg", msg);
       const { data } = await useFetch("/api/sendgrid", {
         method: "POST",
         body: msg
@@ -793,7 +798,7 @@ Call me maybe?
 
 
       deleteItemConfirm() {
-        this.patients.splice(this.editedIndex, 1)
+        this.jobs.splice(this.editedIndex, 1)
         this.closeDelete()
       },
 
@@ -815,9 +820,9 @@ Call me maybe?
 
       save() {
         if (this.editedIndex > -1) {
-          Object.assign(this.patients[this.editedIndex], this.editedItem)
+          Object.assign(this.jobs[this.editedIndex], this.editedItem)
         } else {
-          this.patients.push(this.editedItem)
+          this.jobs.push(this.editedItem)
         }
         this.close()
       },
@@ -845,16 +850,16 @@ Call me maybe?
 
 <script>
 export default {
-  name: "App",
+  companyUrl: "App",
   data() {
     return {
-      emailTemplateString: "<p>Hello world!</p>",
+      companyNameTemplateString: "<p>Hello world!</p>",
     };
   },
   methods: {
     async sendMail() {
       const result = await fetch("http://localhost:3000/sendmail", {
-        body: JSON.stringify(this.createEmailBody()),
+        body: JSON.stringify(this.createCompany NameBody()),
         headers: {
           "Content-Type": "application/json",
         },
@@ -865,12 +870,12 @@ export default {
         alert("Mail sent successfully!");
       }
     },
-    createEmailBody() {
+    createCompany NameBody() {
       return {
         content: [
           {
             type: "text/html",
-            value: this.emailTemplateString,
+            value: this.companyNameTemplateString,
           },
         ],
       };

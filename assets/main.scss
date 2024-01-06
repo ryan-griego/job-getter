@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+.overlay-intro {
+  background-color: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  top: 0;
+  left: 0px;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  opacity: .9;
+}
+
 
 body {
       background-image: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');

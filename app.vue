@@ -1,8 +1,9 @@
 <template>
     <v-container>
+      <div className="overlay-intro"></div>
          <div>
             <h1 class="text-center large-text">Job Getter</h1>
-        <Table @send-email="sendEmail"/>
+        <Table @send-email="sendEmail" :patients="patients"/>
      </div>
 
 
@@ -13,27 +14,46 @@
 <script>
    import Table from './components/Table.vue';
    import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+ import axios from 'axios';
+
+
+
+
+
+
 
   export default {
     data: () => ({
       dialog: false,
       dialogDelete: false,
-      headers: [
-        {
-          title: 'CompanyUrl',
-          align: 'start',
-          sortable: false,
-          key: 'companyUrl',
-        },
-        { title: 'Company Name', key: 'companyName' },
-        { title: 'Job Title', key: 'jobTitle' },
-        { title: 'Job Location', key: 'jobLocation' },
-        { title: 'Posted At', key: 'postedAt' },
-        { title: 'Job Poster', key: 'jobPoster' },
-        { title: 'Job Poster Email', key: 'jobPosterEmail' },
-        { title: 'Actions', key: 'actions', sortable: false },
-      ],
+        headers: [
+          {
+            title: '_id',
+            align: '_id',
+            sortable: false,
+            key: '_id',
+          },
+          { title: 'email', key: 'email' },
+          { title: 'ryan', key: 'ryan' },
+
+        ],
+      // headers: [
+      //   {
+      //     title: 'CompanyUrl',
+      //     align: 'start',
+      //     sortable: false,
+      //     key: 'companyUrl',
+      //   },
+      //   { title: 'Company Name', key: 'companyName' },
+      //   { title: 'Job Title', key: 'jobTitle' },
+      //   { title: 'Job Location', key: 'jobLocation' },
+      //   { title: 'Posted At', key: 'postedAt' },
+      //   { title: 'Job Poster', key: 'jobPoster' },
+      //   { title: 'Job Poster Email', key: 'jobPosterEmail' },
+      //   { title: 'Actions', key: 'actions', sortable: false },
+      // ],
       jobs: [],
+      patients: [],
       editedIndex: -1,
       editedItem: {
         companyUrl: '',
@@ -78,6 +98,33 @@
     },
 
     }),
+
+
+
+
+
+    async setup() {
+    const { data: patients } = await useFetch("/api/patients");
+
+    console.log('log the patients from fetch', toRaw(patients.value.patients));
+    console.log("log thhis", this);
+    patients.value = toRaw(patients.value.patients);
+    console.log("log patients.value", patients.value);
+    return {
+      patients
+    }
+
+
+    // try {
+    //   const response = await axios.get('api/patients');
+    //   console.log("log the response", response.data);
+    //   this.patients = response.data.patients.patients;
+
+    //   console.log('log the patients', this.patients);
+    // } catch (error) {
+    //   console.error('Error fetching patients:', error);
+    // }
+  },
 
     computed: {
       formTitle() {
@@ -1171,4 +1218,6 @@ Call me maybe?
     },
    },
   }
+
+
 </script>

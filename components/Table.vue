@@ -28,7 +28,7 @@ export default {
       reactiveData: true, //enable data reactivity
       columns: [
       { title: "companyUrl", field: "companyUrl", sorter: "string", width: 200 },
-      { title: "companyName", field: "companyName", sorter: "string", cellClick: function (e, cell) { console.log("cell click") }, },
+      { title: "companyName", field: "companyName", sorter: "string" },
       { title: "jobTitle", field: "jobTitle", sorter: "string", width: 200 },
       { title: "jobLocation", field: "jobLocation", sorter: "string", width: 200 },
       { title: "postedAt", field: "postedAt", sorter: "date", width: 200 },
@@ -49,33 +49,15 @@ export default {
       { title: "jobType", field: "jobType", sorter: "string", width: 200 },
       { title: "applicantsCount", field: "applicantsCount", sorter: "number", width: 200 },
       { title: "experienceLevel", field: "experienceLevel", sorter: "string", width: 200 },
-         {
-          title: "Actions",
-          field: "actions",
-          formatter: function (cell, formatterParams, onRendered) {
-            // Create and style button
-            let button = document.createElement("button");
-            button.style.padding = "10px";
-            button.style.backgroundColor = "lightblue";
-            button.style.border = "none";
-            button.style.borderRadius = "5px";
-            button.style.cursor = "pointer";
-           // button.innerHTML = cell.getValue();
-            button.innerHTML = 'Send Email';
-
-            // Add event listener
-            button.addEventListener("click", (e) => {
-              // Emit an event with the row data
-              vueInstance.$emit('send-email', cell.getRow().getData());
-              console.log("Button clicked:", cell.getRow().getData());
-              console.log("getData", cell.getRow());
-            });
-
-            return button;
-          }
-        },
       ],
     });
+    this.tabulator.on("rowDblClick", function (e, row) {
+      //e - the click event object
+      let rowData = toRaw(row.getData());
+      console.log('log row data', rowData);
+      //row - row component
+    });
+
   }
 }
 </script>

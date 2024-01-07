@@ -11,6 +11,7 @@
 <script>
    import Table from './components/Table.vue';
    import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+   import axios from 'axios';
 
   export default {
     data: () => ({
@@ -25,7 +26,9 @@
           },
           { title: 'email', key: 'email' },
           { title: 'ryan', key: 'ryan' },
+
         ],
+
       jobs: [],
       patients: [],
       editedIndex: -1,
@@ -73,22 +76,18 @@
     }),
 
     // For jobs
-    async setup() {
-      const { data: jobs } = await useFetch("/api/jobs");
-      jobs.value = toRaw(jobs.value.jobs);
-      return {
-        jobs
-      }
-    },
-
+      async setup() {
+    const { data: jobs } = await useFetch("/api/jobs");
+    jobs.value = toRaw(jobs.value.jobs);
+    return {
+      jobs
+    }
+  },
     computed: {
       formTitle() {
         return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
       },
     },
-
-
-    // This may not be needed
     watch: {
       dialog(val) {
         val || this.close()
@@ -97,12 +96,13 @@
         val || this.closeDelete()
       },
     },
-
     created() {
       this.initialize()
     },
-
     methods: {
+    initialize() {
+    },
+
       // may use these in conjunction with tabulator table
       // editItem(item) {
       //   this.editedIndex = this.jobs.indexOf(item)
@@ -127,7 +127,6 @@
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
-
 
       let msg = {
         "personalizations": [
@@ -156,7 +155,6 @@
             value: `<!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
   xmlns:o="urn:schemas-microsoft-com:office:office">
-
 <head>
   <title>
   </title>
@@ -466,8 +464,6 @@
                           <p style="font-size: 13px;line-height: 1.2rem;">Just sending over a friendly follow-up email.<br /></p>
                           <p style="font-size: 13px;line-height: 1.2rem;">I recently applied for the ${jobTitle} position at ${companyName} and
                             wanted to reach out and further express my interest in the&nbsp;position.<br /></p>
-                          <!-- <p>Try Me</p>
-          <p>FREE</p> -->
                         </div>
                       </td>
                     </tr>
@@ -977,7 +973,7 @@
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:center;color:#ffffff;">
                           <p style="font-size: 45px;font-weight: bold;">R/G</p>
                           <p style="font-size: 15px;font-weight: bold;">Thank you for checking me out</p>
-                          <p style="line-height:20px">This email was sent with a full-stack app I built with Nuxt 3, SendGrid, and&nbsp;Fetch, and MongoDB.</p>
+                          <p style="line-height:20px">This email was sent with a full-stack app I built with Nuxt 3, SendGrid, and&nbsp;axios, and MongoDB.</p>
                         </div>
                       </td>
                     </tr>

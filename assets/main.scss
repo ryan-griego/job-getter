@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+
+body {
+      background-image: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+}
+
+.app-heading {
+  font-size: 2rem;
+  color: #1cffcefa;
+  font-weight:bolder;
+  text-shadow: 2px 4px 3px rgba(0, 0, 0, 0.3);
+  padding-bottom: 1rem;
+}
+
 .overlay-intro {
   background-color: rgba(0, 0, 0, 0.6);
   position: absolute;
@@ -14,9 +27,6 @@
 }
 
 
-body {
-      background-image: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
-}
 
 h1, button {
   color:#fff;

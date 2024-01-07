@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     {
       method: "POST",
       headers: {
-        Authorization: "Bearer " + key,
+        Authorization: "Bearer " + config.SENDGRID_API_KEY,
         "Content-Type": "application/json",
         Accept: "application/json"
       },

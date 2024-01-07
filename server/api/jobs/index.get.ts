@@ -1,6 +1,6 @@
 import {Schema, model} from 'mongoose';
 
-const PatientSchema = new Schema({
+const JobSchema = new Schema({
   email: {
     type: String,
   },
@@ -9,11 +9,11 @@ const PatientSchema = new Schema({
   },
 });
 
-export const Patient = model<any>('Patient', PatientSchema);
+export const Job = model<any>('Job', JobSchema);
 
 export default defineEventHandler(async (event) => {
-  const patients = await Patient.find();
+  const jobs = await Job.find();
   return {
-    patients,
+    jobs,
   };
 });

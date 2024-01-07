@@ -2,25 +2,15 @@
     <v-container>
       <div className="overlay-intro"></div>
          <div>
-            <h1 class="text-center large-text">Job Getter</h1>
-        <Table @send-email="sendEmail" :patients="patients"/>
+            <h1 class="text-center app-heading">Job Getter</h1>
+         <Table @send-email="sendEmail" :jobs="jobs"/>
      </div>
-
-
   </v-container>
-
  </template>
 
 <script>
    import Table from './components/Table.vue';
    import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
- import axios from 'axios';
-
-
-
-
-
-
 
   export default {
     data: () => ({
@@ -35,23 +25,7 @@
           },
           { title: 'email', key: 'email' },
           { title: 'ryan', key: 'ryan' },
-
         ],
-      // headers: [
-      //   {
-      //     title: 'CompanyUrl',
-      //     align: 'start',
-      //     sortable: false,
-      //     key: 'companyUrl',
-      //   },
-      //   { title: 'Company Name', key: 'companyName' },
-      //   { title: 'Job Title', key: 'jobTitle' },
-      //   { title: 'Job Location', key: 'jobLocation' },
-      //   { title: 'Posted At', key: 'postedAt' },
-      //   { title: 'Job Poster', key: 'jobPoster' },
-      //   { title: 'Job Poster Email', key: 'jobPosterEmail' },
-      //   { title: 'Actions', key: 'actions', sortable: false },
-      // ],
       jobs: [],
       patients: [],
       editedIndex: -1,
@@ -95,36 +69,17 @@
           value: "<h1>Test message!</h1>"
         }
       ]
-    },
-
+     },
     }),
 
-
-
-
-
+    // For jobs
     async setup() {
-    const { data: patients } = await useFetch("/api/patients");
-
-    console.log('log the patients from fetch', toRaw(patients.value.patients));
-    console.log("log thhis", this);
-    patients.value = toRaw(patients.value.patients);
-    console.log("log patients.value", patients.value);
-    return {
-      patients
-    }
-
-
-    // try {
-    //   const response = await axios.get('api/patients');
-    //   console.log("log the response", response.data);
-    //   this.patients = response.data.patients.patients;
-
-    //   console.log('log the patients', this.patients);
-    // } catch (error) {
-    //   console.error('Error fetching patients:', error);
-    // }
-  },
+      const { data: jobs } = await useFetch("/api/jobs");
+      jobs.value = toRaw(jobs.value.jobs);
+      return {
+        jobs
+      }
+    },
 
     computed: {
       formTitle() {
@@ -132,6 +87,8 @@
       },
     },
 
+
+    // This may not be needed
     watch: {
       dialog(val) {
         val || this.close()
@@ -146,37 +103,7 @@
     },
 
     methods: {
-      initialize() {
-        this.jobs = [
-          {
-            companyUrl: 'https://www.linkedin.com/company/snapsupplements',
-            companyName: 'Snap Supplements®',
-            jobTitle: 'Copywriter',
-            jobLocation: 'male',
-            postedAt: 'Vancouver, WA',
-            jobPoster: 'Alberto Simpson',
-            jobPosterEmail: 'anastasia@snapsupplements.com'
-          },
-          {
-            companyUrl: 'https://www.linkedin.com/company/vysystems',
-            companyName: 'VySystems',
-            jobTitle: 'Technical Writer',
-            jobLocation: 'female',
-            postedAt: 'Corvallis, OR',
-            jobPoster: 'Alberto Simpson',
-            jobPosterEmail: 'vasanth@vysystems.com'
-          },
-          {
-            companyUrl: 'https://www.linkedin.com/company/wellspring-international-education',
-            companyName: 'Wellspring International Education',
-            jobTitle: 'Graphic Designer/Marketing Specialist – Marketing',
-            jobLocation: 'male',
-            postedAt: 'Boulder, CO',
-            jobPoster: 'Alberto Simpson',
-            jobPosterEmail: 'darby.simpson@wellspringinternational.com'
-          },
-        ]
-      },
+      // may use these in conjunction with tabulator table
       // editItem(item) {
       //   this.editedIndex = this.jobs.indexOf(item)
       //   this.editedItem = Object.assign({}, item)
@@ -190,18 +117,16 @@
       // },
 
     async sendEmail(item) {
-      console.log('log the item in sendEmail', item);
       item = toRaw(item);
-            // console.log('log the item in senddddEmail', item);
 
       let html = ""
-      let companyUrl = 'item.companyUrl';
-      // let companyUrl =  item.companyUrl;
-      let companyName = item.companyName;
+      let companyUrl = item.companyUrl;
+      let companyName = item.companyName.replace(/[^\w\s]/gi, '');
+      let companyLogoUrl = item.companyLogoUrl;
       let jobTitle = item.jobTitle;
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
-      let jobPoster = item.jobPoster;
+      let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
 
 
       let msg = {
@@ -211,7 +136,7 @@
               {
                 // this needs to be dynamic for the job posters email to be put in
                 email: "ryangriego@gmail.com",
-      name: "Ryan G"
+                name: "Ryan G"
               }
             ]
           }
@@ -220,11 +145,11 @@
           email: "ryangriego@gmail.com",
           name: "Ryan Griego / Software Engineer"
         },
-        "subject": `💌 Recently applied for ${jobTitle} at ${jobLocation} - thanks for getting to know me `,
+        "subject": `💌 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`,
         "content": [
           {
             type: "text/plain",
-            value: `💌 Recently applied for ${jobTitle} at ${jobLocation} - thanks for getting to know me `
+            value: `💌 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`
           },
           {
             type: "text/html",
@@ -453,7 +378,7 @@
                               <a href="https://www.ryangriego.com/" target="_blank">
                                 <img alt="Ryan Griego logo" height="auto" class="emailImage"
                                   src="https://www.ryangriego.com/images/portfolio-ryan-logo.png"
-                                  style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" />
+                                  style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:90%;font-size:13px;" />
                               </a>
                             </td>
                             </tr>
@@ -537,9 +462,9 @@
                         style="font-size:0px;padding:10px 25px;padding-top:40px;padding-right:25px;padding-bottom:10px;padding-left:25px;word-break:break-word;">
                         <div
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:40px;line-height:1;text-align:left;color:#ffffff;">
-                          <p style="font-size: 22px;line-height: 1.8rem">Hi ${jobPoster},</p>
+                          <p style="font-size: 22px;line-height: 1.8rem">Hi ${jobPosterName},</p>
                           <p style="font-size: 13px;line-height: 1.2rem;">Just sending over a friendly follow-up email.<br /></p>
-                          <p style="font-size: 13px;line-height: 1.2rem;">I recently applied for the ${jobTitle} position at ${companyName} = and
+                          <p style="font-size: 13px;line-height: 1.2rem;">I recently applied for the ${jobTitle} position at ${companyName} and
                             wanted to reach out and further express my interest in the&nbsp;position.<br /></p>
                           <!-- <p>Try Me</p>
           <p>FREE</p> -->
@@ -581,7 +506,7 @@
                             <tr>
                               <td style="width:400px;">
                                 <img alt="Clothes set" height="auto"
-                                  src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1626230794/portfolio/ryan-hero-sign-email-1_pipgjs.jpg"
+                                  src="${companyLogoUrl}"
                                   style="border:none;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;"
                                   width="400" />
                               </td>
@@ -1052,8 +977,7 @@
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:center;color:#ffffff;">
                           <p style="font-size: 45px;font-weight: bold;">R/G</p>
                           <p style="font-size: 15px;font-weight: bold;">Thank you for checking me out</p>
-                          <p style="line-height:20px">This email was sent with an app I built using React, Nodemailer,
-                            Material UI, and&nbsp;axios.</p>
+                          <p style="line-height:20px">This email was sent with a full-stack app I built with Nuxt 3, SendGrid, and&nbsp;Fetch, and MongoDB.</p>
                         </div>
                       </td>
                     </tr>
@@ -1203,14 +1127,12 @@ Call me maybe?
     </div>
     <!--[if mso | IE]></td></tr></table><![endif]-->
   </div>
-
 </body>
 </html>
 `
           }
         ]
       }
-      console.log("log the msg", msg);
       const { data } = await useFetch("/api/sendgrid", {
         method: "POST",
         body: msg
@@ -1218,6 +1140,4 @@ Call me maybe?
     },
    },
   }
-
-
 </script>

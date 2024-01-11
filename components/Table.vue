@@ -1,5 +1,7 @@
 <script>
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
+import { useGlobalState } from '~/composables/state'
+
 
 export default {
   emits: ['sendEmail'],
@@ -22,14 +24,16 @@ export default {
   },
   mounted() {
     const vueInstance = this;
+    const globalState = useGlobalState();
     //instantiate Tabulator when element is mounted
     this.tabulator = new Tabulator(this.$refs.table, {
       data: this.tableData, //link data to table
       reactiveData: true, //enable data reactivity
+      layout: "fitColumns",
       columns: [
       { title: "Job ID", field: "jobId", sorter: "number", width: 100 },
       { title: "Job Title", field: "jobTitle", sorter: "string", width: 200},
-      { title: "Company Name", field: "companyName", sorter: "string", width: 100 },
+      { title: "Company Name", field: "companyName", sorter: "string", maxWidth: 300 },
       { title: "Company URL", field: "companyUrl", sorter: "string", width: 200, visible: false },
       { title: "Job Location", field: "jobLocation", sorter: "string", width: 120 },
       { title: "Posted At", field: "postedAt", sorter: "date", width: 200, visible: false },
@@ -79,7 +83,8 @@ export default {
     this.tabulator.on("rowDblClick", function (e, row) {
       //e - the click event object
       let rowData = toRaw(row.getData());
-      console.log('log row data', rowData);
+      globalState.value.rowData = rowData
+      navigateTo("/job")
       //row - row component
     });
 

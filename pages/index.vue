@@ -1,15 +1,14 @@
 <template>
-    <div>index page</div>
   <v-container>
-      <div className="overlay-intro"></div>
+      <!-- <div className="overlay-intro"></div> -->
          <div>
             <h1 class="text-center app-heading">Job Getter</h1>
          <Table @send-email="sendEmail" :jobs="jobs.data"/>
      </div>
   </v-container>
 </template>
-
 <script>
+
 import Table from '../components/Table.vue';
 import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
 import axios from 'axios';
@@ -82,7 +81,6 @@ export default {
     const { data: jobs } = await useFetch("/api/hello");
     // console.log('log the data', toRaw(jobs.value));
     jobs.value = toRaw(jobs.value);
-    console.log("log jobs", toRaw(jobs.value));
 
     return {
       jobs
@@ -132,15 +130,15 @@ export default {
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
-
+      let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let msg = {
         "personalizations": [
           {
             to: [
               {
                 // this needs to be dynamic for the job posters email to be put in
-                email: "ryangriego@gmail.com",
-                name: "Ryan G"
+                email: `${jobPosterEmail}`,
+                name: `${ jobPosterName}`
               }
             ]
           }
@@ -415,21 +413,21 @@ export default {
                         </div>
                         <div class="mj-inline-links" style="">
                           <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center"><tr><td style="padding:15px 10px;" class="" ><![endif]-->
-                          <a class="mj-link" href="https://www.ryangriego.comhttps://www.ryangriego.com/"
+                          <a class="mj-link" href="https://www.ryangriego.com"
                             target="_blank"
                             style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
                             <span style="letter-spacing:.2px">Portfolio</span>
                           </a>
                           <!--[if mso | IE]></td><td style="padding:15px 10px;" class="" ><![endif]-->
                           <a class="mj-link"
-                            href="https://www.ryangriego.comhttps://www.ryangriego.com/assets/ryan_griego_resume.pdf"
+                            href="https://www.ryangriego.com/assets/ryan_griego_resume.pdf"
                             target="_blank"
                             style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
                             <span style="letter-spacing:.2px">Resume</span>
                           </a>
                           <!--[if mso | IE]></td><td style="padding:15px 10px;" class="" ><![endif]-->
                           <a class="mj-link"
-                            href="https://www.ryangriego.comhttps://www.linkedin.com/in/ryan-griego-2134a340/"
+                            href="https://www.linkedin.com/in/ryan-griego-2134a340/"
                             target="_blank"
                             style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
                             <span style="letter-spacing:.2px">LinkedIn</span>
@@ -843,8 +841,8 @@ export default {
                         style="font-size:0px;padding:10px 25px;padding-top:0;padding-right:25px;padding-bottom:0px;padding-left:25px;word-break:break-word;">
                         <div
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#ffffff;">
-                          <p style="font-size: 19px;">Ryan will</p>
-                          <p style="font-size: 36px;margin-top:-5px;">explore the unknown</p>
+                          <p style="font-size: 19px;">Ryan </p>
+                          <p style="font-size: 36px;margin-top:-5px;">explores the unknown</p>
                           <p>Check out his track record of companies.</p>
                         </div>
                       </td>
@@ -895,8 +893,8 @@ export default {
                         style="font-size:0px;padding:10px 25px;padding-top:0;padding-right:25px;padding-bottom:0px;padding-left:25px;word-break:break-word;">
                         <div
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:1;text-align:left;color:#ffffff;">
-                          <p style="font-size: 19px;">Ryan will also</p>
-                          <p style="font-size: 36px;margin-top:-5px;">Dive deep to find solutions</p>
+                          <p style="font-size: 19px;">Ryan </p>
+                          <p style="font-size: 36px;margin-top:-5px;">dives deep to find solutions</p>
                           <p>Check out the technologies he works with.</p>
                         </div>
                       </td>

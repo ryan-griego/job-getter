@@ -18,37 +18,9 @@ import axios from 'axios';
 
 export default {
   data: () => ({
-    dialog: false,
-    dialogDelete: false,
-    headers: [
-      {
-        title: '_id',
-        align: '_id',
-        sortable: false,
-        key: '_id',
-      },
-      { title: 'email', key: 'email' },
-      { title: 'ryan', key: 'ryan' },
-
-    ],
 
     jobs: [],
-    patients: [],
-    editedIndex: -1,
-    editedItem: {
-      companyUrl: '',
-      companyName: '',
-      jobTitle: '',
-      jobLocation: '',
-      postedAt: '',
-    },
-    defaultItem: {
-      companyUrl: '',
-      companyName: '',
-      jobTitle: '',
-      jobLocation: '',
-      postedAt: '',
-    },
+
     msg: {
       "personalizations": [
         {
@@ -78,11 +50,9 @@ export default {
     },
   }),
 
-  // For jobs
+  // Hello needs to be changed to a more descriptive name
   async setup() {
-    // const { data: jobs } = await useFetch("/api/jobs");
     const { data: jobs } = await useFetch("/api/hello");
-    // console.log('log the data', toRaw(jobs.value));
     jobs.value = toRaw(jobs.value);
 
     return {
@@ -94,33 +64,12 @@ export default {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
   },
-  watch: {
-    dialog(val) {
-      val || this.close()
-    },
-    dialogDelete(val) {
-      val || this.closeDelete()
-    },
-  },
   created() {
     this.initialize()
   },
   methods: {
     initialize() {
     },
-
-    // may use these in conjunction with tabulator table
-    // editItem(item) {
-    //   this.editedIndex = this.jobs.indexOf(item)
-    //   this.editedItem = Object.assign({}, item)
-    //   this.dialog = true
-    // },
-
-    // deleteItem(item) {
-    //   this.editedIndex = this.jobs.indexOf(item)
-    //   this.editedItem = Object.assign({}, item)
-    //   this.dialogDelete = true
-    // },
 
     async sendEmail(item) {
       item = toRaw(item);
@@ -139,7 +88,6 @@ export default {
           {
             to: [
               {
-                // this needs to be dynamic for the job posters email to be put in
                 email: `${jobPosterEmail}`,
                 name: `${ jobPosterName}`
               }

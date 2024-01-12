@@ -58,7 +58,7 @@ export default {
             if(rowData.jobPosterEmail) {
               // Create and style button
               let button = document.createElement("button");
-              button.style.padding = "10px";
+              button.style.padding = "2px";
               button.style.backgroundColor = "green";
               button.style.border = "none";
               button.style.borderRadius = "5px";

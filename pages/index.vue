@@ -3,6 +3,9 @@
       <!-- <div className="overlay-intro"></div> -->
          <div>
             <h1 class="text-center app-heading">Job Getter</h1>
+            <p class="text-center">Double click row to view more details</p>
+            <p>Total # of jobs {{  jobs.data.length }}</p>
+
          <Table @send-email="sendEmail" :jobs="jobs.data"/>
      </div>
   </v-container>

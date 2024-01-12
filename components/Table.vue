@@ -6,10 +6,6 @@ import { useGlobalState } from '~/composables/state'
 export default {
   emits: ['sendEmail'],
   props: {
-    sendEmail: {
-      type: Function,
-      required: true
-    },
       jobs: {
       type: Array,
       required: true
@@ -35,13 +31,14 @@ export default {
       { title: "Job Title", field: "jobTitle", sorter: "string", width: 200},
       { title: "Company Name", field: "companyName", sorter: "string", maxWidth: 300 },
       { title: "Company URL", field: "companyUrl", sorter: "string", width: 200, visible: false },
-      { title: "Job Location", field: "jobLocation", sorter: "string", width: 120 },
+      { title: "Job Location", field: "jobLocation", sorter: "string", width: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", width: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", width: 200, visible: false },
       { title: "Job Description", field: "jobDescription", sorter: "string", width: 200, visible: false },
       { title: "Workplace Type", field: "workplaceType", sorter: "string", width: 100, visible: false  },
       { title: "Job Poster Profile URL", field: "jobPosterProfileUrl", sorter: "string", width: 200, visible: false },
       { title: "Job Poster Name", field: "jobPosterName", sorter: "string", width: 100 },
+      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", width: 200 },
       { title: "Company Logo URL", field: "companyLogoUrl", sorter: "string", width: 200, visible: false },
       { title: "Apply URL", field: "applyUrl", sorter: "string", width: 200, visible: false },
       { title: "Views Count", field: "viewsCount", sorter: "number", width: 80, visible: false },
@@ -57,25 +54,32 @@ export default {
           title: "Actions",
           field: "actions",
           formatter: function (cell, formatterParams, onRendered) {
-            // Create and style button
-            let button = document.createElement("button");
-            button.style.padding = "10px";
-            button.style.backgroundColor = "lightblue";
-            button.style.border = "none";
-            button.style.borderRadius = "5px";
-            button.style.cursor = "pointer";
-            // button.innerHTML = cell.getValue();
-            button.innerHTML = 'Send Email';
+            let rowData = cell.getRow().getData();
+            if(rowData.jobPosterEmail) {
+              // Create and style button
+              let button = document.createElement("button");
+              button.style.padding = "10px";
+              button.style.backgroundColor = "green";
+              button.style.border = "none";
+              button.style.borderRadius = "5px";
+              button.style.cursor = "pointer";
+              // button.innerHTML = cell.getValue();
+              button.innerHTML = 'Send Email';
 
-            // Add event listener
-            button.addEventListener("click", (e) => {
-              // Emit an event with the row data
-              vueInstance.$emit('send-email', cell.getRow().getData());
-              console.log("Button clicked:", cell.getRow().getData());
-              console.log("getData", cell.getRow());
-            });
+              // Add event listener
+              button.addEventListener("click", (e) => {
+                // Emit an event with the row data
+                vueInstance.$emit('send-email', cell.getRow().getData());
+                console.log("Button clicked:", cell.getRow().getData());
+                console.log("getData", cell.getRow());
+              });
 
-            return button;
+              return button;
+
+            } else {
+              return '';
+            }
+
           }
         },
       ],

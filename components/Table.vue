@@ -2,7 +2,6 @@
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useGlobalState } from '~/composables/state'
 
-
 export default {
   emits: ['sendEmail'],
   props: {
@@ -15,16 +14,14 @@ export default {
     return {
       tabulator: null,
       tableData: this.jobs,
-
     }
   },
   mounted() {
     const vueInstance = this;
     const globalState = useGlobalState();
-    //instantiate Tabulator when element is mounted
     this.tabulator = new Tabulator(this.$refs.table, {
-      data: this.tableData, //link data to table
-      reactiveData: true, //enable data reactivity
+      data: this.tableData,
+      reactiveData: true,
       layout: "fitColumns",
       columns: [
       { title: "Job ID", field: "jobId", sorter: "number", width: 100 },
@@ -56,42 +53,32 @@ export default {
           formatter: function (cell, formatterParams, onRendered) {
             let rowData = cell.getRow().getData();
             if(rowData.jobPosterEmail) {
-              // Create and style button
               let button = document.createElement("button");
               button.style.padding = "2px";
               button.style.backgroundColor = "green";
               button.style.border = "none";
               button.style.borderRadius = "5px";
               button.style.cursor = "pointer";
-              // button.innerHTML = cell.getValue();
               button.innerHTML = 'Send Email';
 
-              // Add event listener
               button.addEventListener("click", (e) => {
-                // Emit an event with the row data
                 vueInstance.$emit('send-email', cell.getRow().getData());
                 console.log("Button clicked:", cell.getRow().getData());
                 console.log("getData", cell.getRow());
               });
-
               return button;
-
             } else {
               return '';
             }
-
           }
         },
       ],
     });
     this.tabulator.on("rowDblClick", function (e, row) {
-      //e - the click event object
       let rowData = toRaw(row.getData());
       globalState.value.rowData = rowData
       navigateTo("/job")
-      //row - row component
     });
-
   }
 }
 </script>

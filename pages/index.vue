@@ -18,9 +18,7 @@ import axios from 'axios';
 
 export default {
   data: () => ({
-
     jobs: [],
-
     msg: {
       "personalizations": [
         {

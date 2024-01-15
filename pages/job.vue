@@ -12,7 +12,7 @@ export default {
   },
   methods: {
     formatDate(dateString) {
-      const options =s { year: 'numeric', month: 'long', day: 'numeric' };
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return new Date(dateString).toLocaleDateString(undefined, options);
     },
   }
@@ -70,7 +70,7 @@ export default {
                 <v-card-subtitle>Job Poster Information</v-card-subtitle>
                  <v-card-title>Posted By: {{ rowData.jobPosterName }}</v-card-title>
                    <v-card-subtitle>Email: {{ rowData.jobPosterEmail }}</v-card-subtitle>
-                   <v-card-subtitle>LinkedIn: <a :href="rowData.jobPosterProfileUrl" target="_blank">{{ rowData.jobPosterName }}</a></v-card-subtitle>
+                 <v-card-subtitle>LinkedIn: <a :href="rowData.jobPosterProfileUrl" target="_blank">{{ rowData.jobPosterName }}</a></v-card-subtitle>
               </div>
             </v-col>
           </v-row>

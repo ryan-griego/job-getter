@@ -2,8 +2,6 @@
 
 <template>
   <header>
-    <!-- <NuxtLink to="/">Home</NuxtLink>
-    <NuxtLink to="/job">Job</NuxtLink> -->
   </header>
 </template>
 

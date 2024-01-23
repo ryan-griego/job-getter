@@ -75,7 +75,7 @@ export default {
       let html = ""
       let companyUrl = item.companyUrl;
       let companyName = item.companyName.replace(/[^\w\s]/gi, '');
-      let companyLogoUrl = item.companyLogoUrl;
+      let companyLogoUrl = item.companyLogoUrl ? item.companyLogoUrl : 'https://www.ryangriego.com/images/ryan-hero.jpg';
       let jobTitle = item.jobTitle;
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;

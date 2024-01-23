@@ -52,7 +52,7 @@ export default {
           field: "actions",
           formatter: function (cell, formatterParams, onRendered) {
             let rowData = cell.getRow().getData();
-            if(rowData.jobPosterEmail) {
+           if(rowData.jobPosterEmail) {
               let button = document.createElement("button");
               button.style.padding = "2px";
               button.style.backgroundColor = "green";

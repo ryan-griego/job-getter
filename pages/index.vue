@@ -4,17 +4,21 @@
          <div>
             <h1 class="text-center app-heading">Job Getter</h1>
             <p class="text-center">Double click row to view more details</p>
-            <p>Total # of jobs {{  jobs.data.length }}</p>
+            <!-- <p>Total # of jobs {{  jobs.data.length }}</p> -->
 
-         <Table @send-email="sendEmail" :jobs="jobs.data"/>
-     </div>
+         <Table @send-email="sendEmail" :jobs="jobs.jobs"/>
+  <!-- <button type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800" @click="updateStatus">Green</button> -->
+       </div>
   </v-container>
 </template>
 <script>
 
 import Table from '../components/Table.vue';
 import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
-import axios from 'axios';
+// May not need
+// import axios from 'axios';
+import { mongoose } from 'mongoose';
+
 
 export default {
   data: () => ({
@@ -48,10 +52,13 @@ export default {
     },
   }),
 
-  // Hello needs to be changed to a more descriptive name
   async setup() {
-    const { data: jobs } = await useFetch("/api/hello");
+    // const { data: jobs } = await useFetch("/api/hello");
+          const { data: jobs } = await useFetch("/api/jobs");
     jobs.value = toRaw(jobs.value);
+
+    //jobs.value = toRaw(jobs.value.jobs);
+    // console.log("log jobs - raw", toRaw(jobs.value));
 
     return {
       jobs
@@ -67,6 +74,12 @@ export default {
   },
   methods: {
     initialize() {
+    },
+
+    async updateStatus() {
+
+      jobs.value = toRaw(jobs.value);
+
     },
 
     async sendEmail(item) {
@@ -413,7 +426,7 @@ export default {
                         <div
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:40px;line-height:1;text-align:left;color:#ffffff;">
                           <p style="font-size: 22px;line-height: 1.8rem">Hi ${jobPosterName},</p>
-                          <p style="font-size: 13px;line-height: 1.2rem;">Just sending over a friendly follow-up email.<br /></p>
+                          <p style="font-size: 13px;line-height: 1.2rem;">Thanks for taking my application!.<br /></p>
                           <p style="font-size: 13px;line-height: 1.2rem;">I recently applied for the ${jobTitle} position at ${companyName} and
                             wanted to reach out and further express my interest in the&nbsp;position.<br /></p>
                         </div>

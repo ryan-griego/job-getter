@@ -6,7 +6,8 @@ export default defineEventHandler(async (event) => {
     {
       method: "POST",
       headers: {
-        Authorization: "Bearer " + config.SENDGRID_API_KEY,
+        // Prevents me from going above the free tier emails
+        Authorization: "Bearffer " + config.SENDGRID_API_KEY,
         "Content-Type": "application/json",
         Accept: "application/json"
       },

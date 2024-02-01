@@ -26,7 +26,7 @@ export default {
       columns: [
       { title: "Job ID", field: "jobId", sorter: "number", width: 100 },
       { title: "Job Title", field: "jobTitle", sorter: "string", width: 200},
-      { title: "Status", field: "status", sorter: "string", width: 200 },
+      { title: "Status", field: "status", sorter: "string", width: 100 },
       { title: "Company Name", field: "companyName", sorter: "string", maxWidth: 300 },
       { title: "Company URL", field: "companyUrl", sorter: "string", width: 200, visible: false },
       { title: "Job Location", field: "jobLocation", sorter: "string", width: 120, visible: false },
@@ -64,8 +64,10 @@ export default {
 
               button.addEventListener("click", (e) => {
                 vueInstance.$emit('send-email', cell.getRow().getData());
+
                 console.log("Button clicked:", cell.getRow().getData());
                 console.log("getData", cell.getRow());
+                // Need to redraw the tabulator after a status gets updated
               });
               return button;
             } else {

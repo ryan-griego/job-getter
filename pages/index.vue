@@ -3,11 +3,8 @@
       <!-- <div className="overlay-intro"></div> -->
          <div>
             <h1 class="text-center app-heading">Job Getter</h1>
-            <p class="text-center">Double click row to view more details</p>
-            <!-- <p>Total # of jobs {{  jobs.data.length }}</p> -->
-
+            <p class="text-center mb-2">Double click row to view more details</p>
          <Table @send-email="sendEmail" :jobs="jobs.jobs"/>
-  <!-- <button type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800" @click="updateStatus">Green</button> -->
        </div>
   </v-container>
 </template>
@@ -18,7 +15,6 @@ import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
 // May not need
 // import axios from 'axios';
 import { mongoose } from 'mongoose';
-
 
 export default {
   data: () => ({
@@ -53,12 +49,8 @@ export default {
   }),
 
   async setup() {
-    // const { data: jobs } = await useFetch("/api/hello");
-          const { data: jobs } = await useFetch("/api/jobs");
+    const { data: jobs } = await useFetch("/api/jobs");
     jobs.value = toRaw(jobs.value);
-
-    //jobs.value = toRaw(jobs.value.jobs);
-    // console.log("log jobs - raw", toRaw(jobs.value));
 
     return {
       jobs
@@ -84,7 +76,6 @@ export default {
 
     async sendEmail(item) {
       item = toRaw(item);
-
       let html = ""
       let companyUrl = item.companyUrl;
       let companyName = item.companyName.replace(/[^\w\s]/gi, '');
@@ -1097,6 +1088,14 @@ Call me maybe?
       const { data } = await useFetch("/api/sendgrid", {
         method: "POST",
         body: msg
+      });
+      console.log("log the item", item);
+
+      // Need to tcheck if the sendgrid email was a success, if so, update the status, if not, dont.
+      // Should have an error message if it fails.
+      const { status } = await useFetch("/api/updatestatus", {
+        method: "POST",
+        body: item.jobId
       });
     },
   },

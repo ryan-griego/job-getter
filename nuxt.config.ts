@@ -18,6 +18,7 @@ export default defineNuxtConfig({
   css: ["~/assets/main.scss"],
   runtimeConfig: {
     SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+    PHANTOMBUSTER_API_KEY: process.env.PHANTOMBUSTER_API_KEY,
     mongodbUri: process.env.MONGODB_URI,
   },
   nitro: {

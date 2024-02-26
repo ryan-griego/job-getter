@@ -4,7 +4,9 @@
          <div>
             <h1 class="text-center app-heading">Job Getter</h1>
             <p class="text-center mb-2">Double click row to view more details</p>
+          <div style="background-color:#011918;"><p className="p-1">Total # of jobs {{ jobs.jobs.length }}</p></div>
          <Table @send-email="sendEmail" :jobs="jobs.jobs"/>
+        <v-btn color="primary" @click="runJobScraper">Run Job Scraper</v-btn>
        </div>
   </v-container>
 </template>
@@ -12,8 +14,6 @@
 
 import Table from '../components/Table.vue';
 import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
-// May not need
-// import axios from 'axios';
 import { mongoose } from 'mongoose';
 
 export default {
@@ -55,6 +55,8 @@ export default {
     return {
       jobs
     }
+
+
   },
   computed: {
     formTitle() {
@@ -68,11 +70,32 @@ export default {
     initialize() {
     },
 
-    async updateStatus() {
-
-      jobs.value = toRaw(jobs.value);
-
+    async runJobScraper() {
+      const { data } = await useFetch("/api/runjobscraper", {
+        method: "POST",
+      });
+      console.log("log the data in run job scraper", data);
     },
+    // for later
+    // async getCompanyUrl(item) {
+    //   item = toRaw(item);
+
+    //   let companyName = item.companyName.replace(/[^\w\s]/gi, '');
+
+    //   const { data } = await useFetch("/api/sendgrid", {
+    //     method: "POST",
+    //     body: msg
+    //   });
+    //   console.log("log the item", item);
+
+
+    //   const { status } = await useFetch("/api/updatestatus", {
+    //     method: "POST",
+    //     body: item.jobId
+    //   });
+    //   const vueInstance = this;
+    //   console.log("log this.$el", this.$el);
+    // },
 
     async sendEmail(item) {
       item = toRaw(item);
@@ -1097,6 +1120,10 @@ Call me maybe?
         method: "POST",
         body: item.jobId
       });
+      const vueInstance = this;
+      console.log("log this.$el", this.$el);
+      // vueInstance.tabulator.redraw(true);
+
     },
   },
 }

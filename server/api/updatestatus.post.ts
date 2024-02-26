@@ -3,9 +3,7 @@ import { MongoClient } from 'mongodb';
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const body = await readBody(event);
-
-  const uri = config.mongodbUri;
-  console.log('updatestatus.post.ts: uri:', uri);
+  // const uri = config.mongodbUri;
 
   const client = new MongoClient(uri);
 

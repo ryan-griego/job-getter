@@ -16,6 +16,7 @@ export default {
       tableData: this.jobs,
     }
   },
+
   mounted() {
     const vueInstance = this;
     const globalState = useGlobalState();
@@ -53,7 +54,7 @@ export default {
           field: "actions",
           formatter: function (cell, formatterParams, onRendered) {
             let rowData = cell.getRow().getData();
-           if(rowData.jobPosterEmail) {
+          // if(rowData.jobPosterEmail) {
               let button = document.createElement("button");
               button.style.padding = "2px";
               button.style.backgroundColor = "green";
@@ -61,26 +62,72 @@ export default {
               button.style.borderRadius = "5px";
               button.style.cursor = "pointer";
               button.innerHTML = 'Send Email';
-
               button.addEventListener("click", (e) => {
                 vueInstance.$emit('send-email', cell.getRow().getData());
-
-                console.log("Button clicked:", cell.getRow().getData());
-                console.log("getData", cell.getRow());
-                // Need to redraw the tabulator after a status gets updated
               });
               return button;
-            } else {
-              return '';
-            }
+            // } else {
+            //   return '';
+            // }
           }
         },
+      // For later
+      //  {
+      //     title: "Company URL",
+      //     field: "companyOfficialUrl",
+      //     formatter: function (cell, formatterParams, onRendered) {
+      //       let rowData = cell.getRow().getData();
+      //       let button = document.createElement("button");
+      //       button.style.padding = "2px";
+      //       button.style.backgroundColor = "green";
+      //       button.style.border = "none";
+      //       button.style.borderRadius = "5px";
+      //       button.style.cursor = "pointer";
+      //       button.innerHTML = 'Get URL';
+      //       console.log("log this.$refs.table", this.$refs);
+
+      //       button.addEventListener("click", (e) => {
+
+      //         vueInstance.$emit('send-email', cell.getRow().getData());
+
+
+      //       });
+      //       return button;
+      //     }
+      //   },
       ],
     });
-    this.tabulator.on("rowDblClick", function (e, row) {
+
+        setTimeout(() => {
+        // Now `this` refers to the Vue instance, so `this.tabulator` should be defined
+        console.log("log this.tabulator", this.tabulator);
+        this.tabulator.redraw(true);
+      }, 2000);
+
+
+    // this.tabulator.on("rowDblClick", function (e, row) {
+    //   let rowData = toRaw(row.getData());
+    //   globalState.value.rowData = rowData
+    //      setTimeout(() => {
+    //     // Now `this` refers to the Vue instance, so `this.tabulator` should be defined
+    //     console.log("log this.tabulator", this.tabulator);
+    //     this.tabulator.redraw(true);
+    //     navigateTo("/job")
+    //   }, 2000);
+
+    // });
+
+
+    // /THIS IS NEW THE ONE ABOVE IS ORIGINAL
+    this.tabulator.on("rowDblClick", (e, row) => {
       let rowData = toRaw(row.getData());
       globalState.value.rowData = rowData
-      navigateTo("/job")
+      setTimeout(() => {
+        // Now `this` refers to the Vue instance, so `this.tabulator` should be defined
+        console.log("log this.tabulator", this.tabulator);
+        this.tabulator.redraw(true);
+        navigateTo("/job")
+      }, 2000);
     });
   }
 }

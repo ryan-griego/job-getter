@@ -3,7 +3,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useGlobalState } from '~/composables/state'
 
 export default {
-  emits: ['sendEmail'],
+  emits: ['sendEmail', 'getEmail'],
   props: {
       jobs: {
       type: Array,
@@ -26,10 +26,11 @@ export default {
       layout: "fitColumns",
       columns: [
       { title: "Job ID", field: "jobId", sorter: "number", width: 100 },
-      { title: "Job Title", field: "jobTitle", sorter: "string", width: 200},
+      { title: "Job Title", field: "jobTitle", sorter: "string", width: 100},
       { title: "Status", field: "status", sorter: "string", width: 100 },
-      { title: "Company Name", field: "companyName", sorter: "string", maxWidth: 300 },
+      { title: "Company Name", field: "companyName", sorter: "string", maxWidth: 150 },
       { title: "Company URL", field: "companyUrl", sorter: "string", width: 200, visible: false },
+      { title: "Company Official Url", field: "companyOfficialUrl", sorter: "string", width: 150, visible: true },
       { title: "Job Location", field: "jobLocation", sorter: "string", width: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", width: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", width: 200, visible: false },
@@ -46,7 +47,7 @@ export default {
       { title: "Job Industries", field: "jobIndustries", sorter: "string", width: 200, visible: false  },
       { title: "Job Functions", field: "jobFunctions", sorter: "string", width: 200, visible: false },
       { title: "Remote Allowed", field: "remoteAllowed", sorter: "boolean", width: 80 },
-      { title: "Job Type", field: "jobType", sorter: "string", width: 80 },
+      { title: "Job Type", field: "jobType", sorter: "string", width: 80, visible: false },
       { title: "Applicants Count", field: "applicantsCount", sorter: "number", width: 80, visible: false },
       { title: "Experience Level", field: "experienceLevel", sorter: "string", width: 100 },
        {
@@ -54,7 +55,7 @@ export default {
           field: "actions",
           formatter: function (cell, formatterParams, onRendered) {
             let rowData = cell.getRow().getData();
-          // if(rowData.jobPosterEmail) {
+          if(rowData.jobPosterEmail) {
               let button = document.createElement("button");
               button.style.padding = "2px";
               button.style.backgroundColor = "green";
@@ -66,11 +67,34 @@ export default {
                 vueInstance.$emit('send-email', cell.getRow().getData());
               });
               return button;
-            // } else {
-            //   return '';
-            // }
+            } else {
+              return '';
+            }
           }
         },
+          {
+            title: "Need email?",
+            field: "jobPosterEmail",
+            formatter: function (cell, formatterParams, onRendered) {
+              let rowData = cell.getRow().getData();
+                if (!rowData.jobPosterEmail && rowData.companyOfficialUrl && rowData.jobPosterName) {
+                let button = document.createElement("button");
+                button.style.padding = "2px";
+                button.style.backgroundColor = "turquoise";
+                button.style.border = "none";
+                button.style.borderRadius = "5px";
+                button.style.cursor = "pointer";
+                button.innerHTML = 'Get Email';
+                console.log("log this.$refs.table", this.$refs);
+                button.addEventListener("click", (e) => {
+                  vueInstance.$emit('get-email', cell.getRow().getData());
+                });
+                return button;
+              } else {
+              return '';
+            }
+            }
+          },
       // For later
       //  {
       //     title: "Company URL",
@@ -98,13 +122,6 @@ export default {
       ],
     });
 
-        setTimeout(() => {
-        // Now `this` refers to the Vue instance, so `this.tabulator` should be defined
-        console.log("log this.tabulator", this.tabulator);
-        this.tabulator.redraw(true);
-      }, 2000);
-
-
     // this.tabulator.on("rowDblClick", function (e, row) {
     //   let rowData = toRaw(row.getData());
     //   globalState.value.rowData = rowData
@@ -114,17 +131,12 @@ export default {
     //     this.tabulator.redraw(true);
     //     navigateTo("/job")
     //   }, 2000);
-
     // });
-
-
     // /THIS IS NEW THE ONE ABOVE IS ORIGINAL
     this.tabulator.on("rowDblClick", (e, row) => {
       let rowData = toRaw(row.getData());
       globalState.value.rowData = rowData
       setTimeout(() => {
-        // Now `this` refers to the Vue instance, so `this.tabulator` should be defined
-        console.log("log this.tabulator", this.tabulator);
         this.tabulator.redraw(true);
         navigateTo("/job")
       }, 2000);

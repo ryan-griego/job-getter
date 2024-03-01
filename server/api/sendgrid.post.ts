@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
       },
       body: JSON.stringify(body)
     }).catch((error) => {
+      console.log("log the type of error", typeof error);
       return error;
     });
   return sgRequest;

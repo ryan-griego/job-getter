@@ -8,11 +8,8 @@ export default defineEventHandler(async (event) => {
 
   try {
     await client.connect();
-
     const db = client.db('test');
-
-    await db.collection('jobs').updateOne({ jobId: body }, { $set: { status: 'Sent' } });
-
+    await db.collection('jobs').updateOne({ jobId: body.jobId }, { $set: { jobPosterEmail: body.email } });
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);
   } finally {

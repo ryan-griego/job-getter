@@ -2,9 +2,6 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const body = await readBody(event);
 
-  console.log("log the event", event);
-  console.log("log the config.PHANTOMBUSTER_API_KEY", config.PHANTOMBUSTER_API_KEY);
-
   const scraperRequest = await $fetch("https://api.phantombuster.com/api/v2/agents/launch",
     {
       method: "POST",

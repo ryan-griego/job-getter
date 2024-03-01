@@ -5,15 +5,19 @@
             <h1 class="text-center app-heading">Job Getter</h1>
             <p class="text-center mb-2">Double click row to view more details</p>
           <div style="background-color:#011918;"><p className="p-1">Total # of jobs {{ jobs.jobs.length }}</p></div>
-         <Table @send-email="sendEmail" :jobs="jobs.jobs"/>
+         <Table @send-email="sendEmail" @get-email="getEmail" :jobs="jobs.jobs" class="pt-2"/>
         <v-btn color="primary" @click="runJobScraper">Run Job Scraper</v-btn>
+       <v-btn color="warning" @click="getEmail">Run Get Email</v-btn>
+          <v-btn color="success" @click="getDomain">Run Get Domain</v-btn>
        </div>
   </v-container>
 </template>
 <script>
 
 import Table from '../components/Table.vue';
-import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+// Dark mode
+// import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+import 'tabulator-tables/dist/css/tabulator.min.css';
 import { mongoose } from 'mongoose';
 
 export default {
@@ -56,7 +60,6 @@ export default {
       jobs
     }
 
-
   },
   computed: {
     formTitle() {
@@ -74,28 +77,52 @@ export default {
       const { data } = await useFetch("/api/runjobscraper", {
         method: "POST",
       });
-      console.log("log the data in run job scraper", data);
     },
-    // for later
-    // async getCompanyUrl(item) {
-    //   item = toRaw(item);
 
-    //   let companyName = item.companyName.replace(/[^\w\s]/gi, '');
+    async getEmail(item) {
+      item = toRaw(item);
+      console.log("log the item in get email", item);
 
-    //   const { data } = await useFetch("/api/sendgrid", {
-    //     method: "POST",
-    //     body: msg
-    //   });
-    //   console.log("log the item", item);
+        try {
+      const response = await fetch(`/api/getemail?domain=${item.companyOfficialUrl}&full_name=${item.jobPosterName}`);
 
 
-    //   const { status } = await useFetch("/api/updatestatus", {
-    //     method: "POST",
-    //     body: item.jobId
-    //   });
-    //   const vueInstance = this;
-    //   console.log("log this.$el", this.$el);
-    // },
+        if (!response.ok) {
+          throw new Error('HTTP error ' + response.status);
+        }
+        let data = await response.json();
+        if(data.data.email) {
+          //Update the data in the MongoDB with the correct email
+          const { status } = await useFetch("/api/updatejobposteremail", {
+            method: "POST",
+            body: {
+             'jobId': item.jobId,
+             'email': data.data.email,
+            }
+          });
+          const vueInstance = this;
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    },
+      async getDomain(item) {
+        item = toRaw(item);
+        try {
+          const response = await fetch(url,options);
+          if (!response.ok) {
+            throw new Error('HTTP error ' + response.status);
+          }
+          let data = await response.json();
+
+        } catch (error) {
+          console.error('Failed to fetch data:', error);
+        }
+    },
+
+    //
+    // GET COMPANY URL
+    //
 
     async sendEmail(item) {
       item = toRaw(item);
@@ -107,6 +134,7 @@ export default {
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
+      // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangrieg@gmail.com';
       let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let msg = {
         "personalizations": [
@@ -1108,22 +1136,22 @@ Call me maybe?
           }
         ]
       }
-      const { data } = await useFetch("/api/sendgrid", {
+      console.log("log the msg being passed in", msg);
+      const { data, status, error } = await useFetch("/api/sendgrid", {
         method: "POST",
         body: msg
       });
-      console.log("log the item", item);
-
-      // Need to tcheck if the sendgrid email was a success, if so, update the status, if not, dont.
-      // Should have an error message if it fails.
-      const { status } = await useFetch("/api/updatestatus", {
-        method: "POST",
-        body: item.jobId
-      });
-      const vueInstance = this;
-      console.log("log this.$el", this.$el);
-      // vueInstance.tabulator.redraw(true);
-
+      console.log("log the status code", status.value);
+      console.log("log the error code", error.value);
+       // check if the sendgrid email was a success, if so, update the status, if not, dont.
+      if(error.value === 'error') {
+         return;
+      } else {
+        const { status } = await useFetch("/api/updatestatus", {
+          method: "POST",
+          body: item.jobId
+        });
+      }
     },
   },
 }

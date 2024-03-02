@@ -1,23 +1,24 @@
 <template>
-  <v-container>
-      <!-- <div className="overlay-intro"></div> -->
-         <div>
-            <h1 class="text-center app-heading">Job Getter</h1>
-            <p class="text-center mb-2">Double click row to view more details</p>
-          <div style="background-color:#011918;"><p className="p-1">Total # of jobs {{ jobs.jobs.length }}</p></div>
-         <Table @send-email="sendEmail" @get-email="getEmail" :jobs="jobs.jobs" class="pt-2"/>
-        <v-btn color="primary" @click="runJobScraper">Run Job Scraper</v-btn>
-       <v-btn color="warning" @click="getEmail">Run Get Email</v-btn>
-          <v-btn color="success" @click="getDomain">Run Get Domain</v-btn>
-       </div>
-  </v-container>
+    <v-container>
+        <div className="overlay-intro"></div>
+          <div>
+              <h1 class="text-center app-heading">Job Getter</h1>
+              <p class="text-center mb-2">Double click row to view more details</p>
+                <div style="background-color:#011918;">
+                  <p className="p-1">Total # of jobs {{ jobs.jobs.length }}</p>
+                </div>
+              <Table @send-email="sendEmail" @get-email="getEmail" :jobs="jobs.jobs" class="pt-2 mb-4"/>
+              <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Job Scraper</v-btn>
+              <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch New Jobs</v-btn>
+        </div>
+    </v-container>
 </template>
 <script>
 
 import Table from '../components/Table.vue';
 // Dark mode
-// import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
-import 'tabulator-tables/dist/css/tabulator.min.css';
+import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+// import 'tabulator-tables/dist/css/tabulator.min.css';
 import { mongoose } from 'mongoose';
 
 export default {
@@ -74,19 +75,54 @@ export default {
     },
 
     async runJobScraper() {
-      const { data } = await useFetch("/api/runjobscraper", {
+      const { data, error } = await useFetch("/api/runjobscraper", {
         method: "POST",
       });
+
+      console.log("log the data before json", data);
+
+      data = await data.json();
+      console.log("log the data after json", data);
+
+
+      if(error.value === 'error') {
+        //return an error message
+      }
+
     },
 
+    async fetchNewJobs() {
+      const { data, error } = await useFetch("/api/fetchnewjobs", {
+        method: "POST",
+      });
+      // GET THE OUTPUT OF THE API CALL
+      if(data.value.output) {
+        let output = data.value.output;
+        let urls = output.match(/https?:\/\/[^\s]+/g);
+        let lastUrl = urls[urls.length -1];
+        const getJobsJson = await fetch(lastUrl);
+        let jobsData = await getJobsJson.json();
+        jobsData = jobsData.map(job => ( {
+            ...job,
+            companyOfficialUrl: '',
+            status: 'Applied',
+            jobPosterEmail: '',
+        }));
+        console.log('Log the jobsData AFTER ADDING NEW THINGS', jobsData);
+        // ADD THE NEWLY FORMED DATA TO MONGODB
+          const { data: jobs } = await useFetch("/api/addjobs", {
+            method: "POST",
+            body: jobsData
+        });
+      }
+      if(error.value === 'error') {
+        //return an error message
+      }
+    },
     async getEmail(item) {
       item = toRaw(item);
-      console.log("log the item in get email", item);
-
         try {
-      const response = await fetch(`/api/getemail?domain=${item.companyOfficialUrl}&full_name=${item.jobPosterName}`);
-
-
+          const response = await fetch(`/api/getemail?domain=${item.companyOfficialUrl}&full_name=${item.jobPosterName}`);
         if (!response.ok) {
           throw new Error('HTTP error ' + response.status);
         }
@@ -101,23 +137,12 @@ export default {
             }
           });
           const vueInstance = this;
+          console.log("log the vueInstance", vueInstance);
+          // Refresh the tabulator show the data
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
-    },
-      async getDomain(item) {
-        item = toRaw(item);
-        try {
-          const response = await fetch(url,options);
-          if (!response.ok) {
-            throw new Error('HTTP error ' + response.status);
-          }
-          let data = await response.json();
-
-        } catch (error) {
-          console.error('Failed to fetch data:', error);
-        }
     },
 
     //
@@ -1136,13 +1161,10 @@ Call me maybe?
           }
         ]
       }
-      console.log("log the msg being passed in", msg);
       const { data, status, error } = await useFetch("/api/sendgrid", {
         method: "POST",
         body: msg
       });
-      console.log("log the status code", status.value);
-      console.log("log the error code", error.value);
        // check if the sendgrid email was a success, if so, update the status, if not, dont.
       if(error.value === 'error') {
          return;

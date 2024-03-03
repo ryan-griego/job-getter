@@ -3,7 +3,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useGlobalState } from '~/composables/state'
 
 export default {
-  emits: ['sendEmail', 'getEmail'],
+  emits: ['sendEmail', 'getEmail', 'updateDomain'],
   props: {
       jobs: {
       type: Array,
@@ -20,6 +20,17 @@ export default {
   mounted() {
     const vueInstance = this;
     const globalState = useGlobalState();
+    var cellContextMenu = [
+    {
+        label:"Add domain",
+        action:function(e, cell){
+            cell.edit();
+            // cell.setValue("");
+            // Update the Mongo DB document using the jobId with the value of the company domain
+            vueInstance.$emit('update-domain', cell.getRow().getData());
+        }
+    },
+]
     this.tabulator = new Tabulator(this.$refs.table, {
       data: this.tableData,
       reactiveData: true,
@@ -28,9 +39,9 @@ export default {
       { title: "Job ID", field: "jobId", sorter: "number", minWidth: 100 },
       { title: "Job Title", field: "jobTitle", sorter: "string", minWidth: 100},
       { title: "Status", field: "status", sorter: "string", minWidth: 100 },
-      { title: "Company Name", field: "companyName", sorter: "string", maxminWidth: 150 },
+      { title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
       { title: "Company URL", field: "companyUrl", sorter: "string", minWidth: 200, visible: false },
-      { title: "Company Official Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true },
+      { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, contextMenu:cellContextMenu, editor:'input'},
       { title: "Job Location", field: "jobLocation", sorter: "string", minWidth: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", minWidth: 200, visible: false },
@@ -112,7 +123,8 @@ export default {
       //       return button;
       //     }
       //   },
-      ],
+      ]
+
     });
 
     // this.tabulator.on("rowDblClick", function (e, row) {

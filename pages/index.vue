@@ -7,7 +7,7 @@
                 <div style="background-color:#011918;">
                   <p className="p-1">Total # of jobs {{ jobs.jobs.length }}</p>
                 </div>
-              <Table @send-email="sendEmail" @get-email="getEmail" :jobs="jobs.jobs" class="pt-2 mb-4"/>
+              <Table @send-email="sendEmail" @get-email="getEmail" @update-domain="updateDomain" :jobs="jobs.jobs" class="pt-2 mb-4"/>
               <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Job Scraper</v-btn>
               <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch New Jobs</v-btn>
         </div>
@@ -91,6 +91,30 @@ export default {
 
     },
 
+    async updateDomain(item) {
+      item = toRaw(item);
+      console.log("got to updateDomain");
+      console.log("log the item", item);
+      const { data, error } = await useFetch("/api/updatedomain", {
+        method: "POST",
+         body: {
+             'jobId': item.jobId,
+             'domain': item.companyOfficialUrl,
+            }
+      });
+
+      // console.log("log the data before json", await data);
+
+      // data = await data.json();
+      // console.log("log the data after json", data);
+
+
+      if(error.value === 'error') {
+        //return an error message
+      }
+
+    },
+
     async fetchNewJobs() {
       const { data, error } = await useFetch("/api/fetchnewjobs", {
         method: "POST",
@@ -159,8 +183,8 @@ export default {
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
-      // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangrieg@gmail.com';
-      let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+      let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangrieg@gmail.com';
+     // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let msg = {
         "personalizations": [
           {
@@ -493,7 +517,7 @@ export default {
                         <div
                           style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:40px;line-height:1;text-align:left;color:#ffffff;">
                           <p style="font-size: 22px;line-height: 1.8rem">Hi ${jobPosterName},</p>
-                          <p style="font-size: 13px;line-height: 1.2rem;">Thanks for taking my application!.<br /></p>
+                          <p style="font-size: 13px;line-height: 1.2rem;">Thank you for taking my application.<br /></p>
                           <p style="font-size: 13px;line-height: 1.2rem;">I recently applied for the ${jobTitle} position at ${companyName} and
                             wanted to reach out and further express my interest in the&nbsp;position.<br /></p>
                         </div>

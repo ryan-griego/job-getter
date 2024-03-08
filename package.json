@@ -31,6 +31,7 @@
     "mongoose": "^8.0.3",
     "sass": "^1.69.5",
     "tabulator-tables": "^5.5.2",
-    "vite": "^5.0.10"
+    "vite": "^5.0.10",
+    "vue3-toastify": "^0.2.1"
   }
 }

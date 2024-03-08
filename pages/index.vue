@@ -1,7 +1,8 @@
 <template>
     <v-container>
-        <div className="overlay-intro"></div>
+        <!-- <div className="overlay-intro"></div> -->
           <div>
+                <button @click="notify">notify by click</button>
               <h1 class="text-center app-heading">Job Getter</h1>
               <p class="text-center mb-2">Double click row to view more details</p>
                 <div style="background-color:#011918;">
@@ -10,16 +11,24 @@
               <Table @send-email="sendEmail" @get-email="getEmail" @update-domain="updateDomain" :jobs="jobs.jobs" class="pt-2 mb-4"/>
               <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Job Scraper</v-btn>
               <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch New Jobs</v-btn>
+
         </div>
     </v-container>
 </template>
-<script>
 
+
+<script>
 import Table from '../components/Table.vue';
 // Dark mode
-import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
-// import 'tabulator-tables/dist/css/tabulator.min.css';
+// import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+import 'tabulator-tables/dist/css/tabulator.min.css';
 import { mongoose } from 'mongoose';
+
+nextTick(() => {
+  if (process.client) {
+    useNuxtApp().$toast('notify after nextTick');
+  }
+});
 
 export default {
   data: () => ({
@@ -74,21 +83,37 @@ export default {
     initialize() {
     },
 
+notify(reason) {
+  switch (reason) {
+    case "fail-scraper":
+      useNuxtApp().$toast.error('JobScraper failed');
+      break;
+    case "fail-update-domain":
+      useNuxtApp().$toast.error('Update domain failed');
+      break;
+    case "fail-fetch-new-jobs":
+      useNuxtApp().$toast.error('Fetch new jobs failed');
+      break;
+    case "fail-get-email":
+      useNuxtApp().$toast.error('Get email failed');
+      break;
+    case "fail-send-email":
+      useNuxtApp().$toast.error('Send email failed');
+      break;
+    default:
+      useNuxtApp().$toast.error('Notify by click - test');
+  }
+},
+
     async runJobScraper() {
       const { data, error } = await useFetch("/api/runjobscraper", {
         method: "POST",
       });
-
-      console.log("log the data before json", data);
-
       data = await data.json();
-      console.log("log the data after json", data);
-
-
       if(error.value === 'error') {
         //return an error message
+          this.notify('fail-scraper');
       }
-
     },
 
     async updateDomain(item) {
@@ -103,23 +128,16 @@ export default {
             }
       });
 
-      // console.log("log the data before json", await data);
-
-      // data = await data.json();
-      // console.log("log the data after json", data);
-
-
       if(error.value === 'error') {
         //return an error message
+        this.notify('fail-update-domain');
       }
-
     },
 
     async fetchNewJobs() {
       const { data, error } = await useFetch("/api/fetchnewjobs", {
         method: "POST",
       });
-      // GET THE OUTPUT OF THE API CALL
       if(data.value.output) {
         let output = data.value.output;
         let urls = output.match(/https?:\/\/[^\s]+/g);
@@ -132,14 +150,13 @@ export default {
             status: 'Applied',
             jobPosterEmail: '',
         }));
-        console.log('Log the jobsData AFTER ADDING NEW THINGS', jobsData);
-        // ADD THE NEWLY FORMED DATA TO MONGODB
           const { data: jobs } = await useFetch("/api/addjobs", {
             method: "POST",
             body: jobsData
         });
       }
       if(error.value === 'error') {
+         this.notify('fail-fetch-new-jobs');
         //return an error message
       }
     },
@@ -162,10 +179,10 @@ export default {
           });
           const vueInstance = this;
           console.log("log the vueInstance", vueInstance);
-          // Refresh the tabulator show the data
+          // Need to refresh the tabulator show the data
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        this.notify('fail-get-email');
       }
     },
 
@@ -1191,7 +1208,7 @@ Call me maybe?
       });
        // check if the sendgrid email was a success, if so, update the status, if not, dont.
       if(error.value === 'error') {
-         return;
+        this.notify('fail-send-email');
       } else {
         const { status } = await useFetch("/api/updatestatus", {
           method: "POST",

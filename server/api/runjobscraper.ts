@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
         Accept: "application/json",
         "X-Phantombuster-Key": config.PHANTOMBUSTER_API_KEY
       },
-      body: JSON.stringify({ id: '719955461448504' })
+      body: JSON.stringify({ id: '5183562289175487' })
     }).catch((error) => {
       console.log("log the error", error);
       return error;

@@ -18,6 +18,7 @@ export default {
   },
 
   mounted() {
+
     const vueInstance = this;
     const globalState = useGlobalState();
     var cellContextMenu = [
@@ -36,8 +37,16 @@ export default {
       reactiveData: true,
       layout: "fitColumns",
       columns: [
-      { title: "Job ID", field: "jobId", sorter: "number", minWidth: 100 },
-      { title: "Job Title", field: "jobTitle", sorter: "string", minWidth: 100},
+         { title: "", field: "logo",maxWidth:40, formatter: function (cell, formatterParams, onRendered) {
+          let rowData = cell.getRow().getData();
+          let url = rowData.companyLogoUrl ?  rowData.companyLogoUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
+          console.log("log url", url);
+          return `<img src="${url}" style="height:40px;width:40px;">`;
+         }
+
+        },
+      { title: "Job ID", field: "jobId", sorter: "number", minWidth: 100, visible:false },
+      { title: "Job Title", field: "jobTitle", sorter: "string", minWidth: 160},
       { title: "Status", field: "status", sorter: "string", minWidth: 100 },
       { title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
       { title: "Company URL", field: "companyUrl", sorter: "string", minWidth: 200, visible: false },
@@ -57,7 +66,7 @@ export default {
       { title: "Company Description", field: "companyDescription", sorter: "string", minWidth: 200, visible: false },
       { title: "Job Industries", field: "jobIndustries", sorter: "string", minWidth: 200, visible: false  },
       { title: "Job Functions", field: "jobFunctions", sorter: "string", minWidth: 200, visible: false },
-      { title: "Remote Allowed", field: "remoteAllowed", sorter: "boolean", minWidth: 80 },
+      { title: "Remote Allowed", field: "remoteAllowed", sorter: "boolean", minWidth: 40 },
       { title: "Job Type", field: "jobType", sorter: "string", minWidth: 80, visible: false },
       { title: "Applicants Count", field: "applicantsCount", sorter: "number", minWidth: 80, visible: false },
       { title: "Experience Level", field: "experienceLevel", sorter: "string", minWidth: 100 },
@@ -76,7 +85,7 @@ export default {
               button.style.cursor = "pointer";
               button.innerHTML = 'Send Email';
               button.addEventListener("click", (e) => {
-                vueInstance.$emit('send-email', cell.getRow().getData());
+                vueInstance.$emit('open-email-modal', cell.getRow().getData());
               });
               return button;
             } else if(!rowData.jobPosterEmail && rowData.companyOfficialUrl && rowData.jobPosterName) {
@@ -98,31 +107,6 @@ export default {
             }
           }
         },
-
-      // For later
-      //  {
-      //     title: "Company URL",
-      //     field: "companyOfficialUrl",
-      //     formatter: function (cell, formatterParams, onRendered) {
-      //       let rowData = cell.getRow().getData();
-      //       let button = document.createElement("button");
-      //       button.style.padding = "2px";
-      //       button.style.backgroundColor = "green";
-      //       button.style.border = "none";
-      //       button.style.borderRadius = "5px";
-      //       button.style.cursor = "pointer";
-      //       button.innerHTML = 'Get URL';
-      //       console.log("log this.$refs.table", this.$refs);
-
-      //       button.addEventListener("click", (e) => {
-
-      //         vueInstance.$emit('send-email', cell.getRow().getData());
-
-
-      //       });
-      //       return button;
-      //     }
-      //   },
       ]
 
     });
@@ -140,11 +124,10 @@ export default {
     // /THIS IS NEW THE ONE ABOVE IS ORIGINAL
     this.tabulator.on("rowDblClick", (e, row) => {
       let rowData = toRaw(row.getData());
-      globalState.value.rowData = rowData
-      setTimeout(() => {
+      globalState.value.rowData = rowData;
         this.tabulator.redraw(true);
         navigateTo("/job")
-      }, 2000);
+
     });
   }
 }

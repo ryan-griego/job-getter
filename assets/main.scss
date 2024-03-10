@@ -5,6 +5,7 @@
 
 body {
      background-image: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+    background-repeat: repeat-y;
      color: white;
 }
 
@@ -24,6 +25,7 @@ body {
   height: 100%;
   width: 100%;
   opacity: .9;
+  background-repeat: repeat-y;
 }
 
 h1, button {

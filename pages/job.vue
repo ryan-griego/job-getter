@@ -21,76 +21,65 @@ export default {
 
 <template>
   <v-container>
-    <!-- Job Information -->
-    <v-card color="#FFFFFF">
-      <NuxtLink to="/">Back</NuxtLink>
-      <v-row justify="center">
-        <v-col cols="12" sm="8" md="6">
-          <div class="content">
-            <v-img :src="rowData.companyLogoUrl" alt="Company Logo" width="50%"></v-img>
-            <v-card-subtitle>{{ rowData.companyName }} - {{ rowData.jobLocation }}</v-card-subtitle>
-            <v-card-title>{{ rowData.jobTitle }}</v-card-title>
-            <v-card-subtitle>Posted at: {{ formatDate(rowData.postedAt) }}</v-card-subtitle>
-            <v-card-text>
-              {{ rowData.jobDescription }}
-            </v-card-text>
-            <v-card-actions>
-              <v-btn color="primary" :href="rowData.query" target="_blank">Job LinkedIn Page</v-btn>
-            </v-card-actions>
-          </div>
-        </v-col>
-      </v-row>
-
-      <!-- Company Information -->
-    </v-card>
-        <v-card color="FFFFFF">
-        <v-row justify="center">
-          <v-col cols="12" sm="8" md="6">
-            <div class="content">
-              <v-card-subtitle>{{ rowData.companyName }}</v-card-subtitle>
-              <v-card-title>{{ rowData.jobTitle }}</v-card-title>
-            <v-card-title>{{ rowData.companyName }}</v-card-title>
-            <v-card-subtitle>Industry: {{ rowData.jobIndustries }}</v-card-subtitle>
-            <v-card-subtitle>Employees: {{ rowData.companyStaffCount }}</v-card-subtitle>
-            <v-card-subtitle v-if="rowData.remoteAllowed">Remote Allowed</v-card-subtitle>
-            <v-card-subtitle v-else>On-site</v-card-subtitle>
-            <v-card-text>{{ rowData.companyDescription }}</v-card-text>
-              <v-card-actions>
-                <v-btn color="primary" :href="rowData.companyUrl" target="_blank">Company LinkedIn Page</v-btn>
-              </v-card-actions>
-            </div>
+    <v-card color="#F5F5F5" class="mb-5">
+      <v-toolbar color="primary" dark>
+        <v-toolbar-title>{{ rowData.jobTitle }}</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <NuxtLink to="/" class="white--text">Back</NuxtLink>
+      </v-toolbar>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <v-img :src="rowData.companyLogoUrl" alt="Company Logo" contain height="200px"></v-img>
+          </v-col>
+          <v-col cols="12" sm="6">
+            <h2>{{ rowData.companyName }}</h2>
+            <p>{{ rowData.jobLocation }}</p>
+            <p>Posted at: {{ formatDate(rowData.postedAt) }}</p>
+            <p>{{ rowData.jobDescription }}</p>
+            <v-btn color="primary" :href="rowData.query" target="_blank">Job LinkedIn Page</v-btn>
           </v-col>
         </v-row>
-      </v-card>
-          <!-- Job Poster Information -->
-          <v-card color="FFFFFF">
-          <v-row justify="center">
-            <v-col cols="12" sm="8" md="6">
-              <div class="content">
-                <v-card-subtitle>Job Poster Information</v-card-subtitle>
-                 <v-card-title>Posted By: {{ rowData.jobPosterName }}</v-card-title>
-                   <v-card-subtitle>Email: {{ rowData.jobPosterEmail }}</v-card-subtitle>
-                 <v-card-subtitle>LinkedIn: <a :href="rowData.jobPosterProfileUrl" target="_blank">{{ rowData.jobPosterName }}</a></v-card-subtitle>
-              </div>
-            </v-col>
-          </v-row>
-        </v-card>
+      </v-card-text>
+    </v-card>
 
-   <!-- Job Metrics -->
-          <v-card color="FFFFFF">
-            <v-row justify="center">
-              <v-col cols="12" sm="8" md="6">
-                <div class="content">
-                  <v-card-title>Job Metrics</v-card-title>
-                   <v-card-subtitle>Applicants: {{ rowData.applicantsCount }}</v-card-subtitle>
-                   <v-card-subtitle>Views: {{ rowData.viewsCount }}</v-card-subtitle>
-                </div>
-              </v-col>
-            </v-row>
-          </v-card>
+    <v-card color="#F5F5F5" class="mb-5">
+      <v-toolbar color="secondary" dark>
+        <v-toolbar-title>Company Information</v-toolbar-title>
+      </v-toolbar>
+      <v-card-text>
+        <h2>{{ rowData.companyName }}</h2>
+        <p>Industry: {{ rowData.jobIndustries }}</p>
+        <p>Employees: {{ rowData.companyStaffCount }}</p>
+        <p v-if="rowData.remoteAllowed">Remote Allowed</p>
+        <p v-else>On-site</p>
+        <p>{{ rowData.companyDescription }}</p>
+        <v-btn color="primary" :href="rowData.companyUrl" target="_blank">Company LinkedIn Page</v-btn>
+      </v-card-text>
+    </v-card>
+
+    <v-card color="#F5F5F5" class="mb-5">
+      <v-toolbar color="secondary" dark>
+        <v-toolbar-title>Job Poster Information</v-toolbar-title>
+      </v-toolbar>
+      <v-card-text>
+        <h2>Posted By: {{ rowData.jobPosterName }}</h2>
+        <p>Email: {{ rowData.jobPosterEmail }}</p>
+        <p>LinkedIn: <a :href="rowData.jobPosterProfileUrl" target="_blank">{{ rowData.jobPosterName }}</a></p>
+      </v-card-text>
+    </v-card>
+
+    <v-card color="#F5F5F5" class="mb-5">
+      <v-toolbar color="secondary" dark>
+        <v-toolbar-title>Job Metrics</v-toolbar-title>
+      </v-toolbar>
+      <v-card-text>
+        <h2>Applicants: {{ rowData.applicantsCount }}</h2>
+        <h2>Views: {{ rowData.viewsCount }}</h2>
+      </v-card-text>
+    </v-card>
   </v-container>
 </template>
-
 <style scoped>
 .content {
   max-width: 200ch;

@@ -6,7 +6,7 @@
 body {
      background-image: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
     background-repeat: repeat-y;
-     color: white;
+    //color: white;
 }
 
 .app-heading {
@@ -14,6 +14,10 @@ body {
   color: #1cffcefa;
   font-weight:bolder;
   text-shadow: 2px 4px 3px rgba(0, 0, 0, 0.3);
+}
+
+.outside-table {
+  color: #1cffcefa;
 }
 
 .overlay-intro {

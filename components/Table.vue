@@ -3,11 +3,15 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useGlobalState } from '~/composables/state'
 
 export default {
-  emits: ['sendEmail', 'getEmail', 'updateDomain'],
+  emits: ['sendEmail', 'getEmail', 'updateDomain', 'deleteRow'],
   props: {
       jobs: {
       type: Array,
       required: true
+    },
+    isRemote: {
+      type: Boolean,
+      default: null
     },
   },
   data() {
@@ -17,30 +21,58 @@ export default {
     }
   },
 
+  computed: {
+
+  },
+
   mounted() {
 
     const vueInstance = this;
     const globalState = useGlobalState();
-    var cellContextMenu = [
+    this.tabulator = new Tabulator(this.$refs.table, {
+      pagination: "local",
+      paginationSize: 13,
+      rowContextMenu: [
     {
-        label:"Add domain",
-        action:function(e, cell){
-            cell.edit();
+        label:"Delete row",
+        action:function(e, row){
+           vueInstance.$emit('delete-row', row.getData());
+            row.delete();
             // cell.setValue("");
             // Update the Mongo DB document using the jobId with the value of the company domain
-            vueInstance.$emit('update-domain', cell.getRow().getData());
+
         }
     },
-]
-    this.tabulator = new Tabulator(this.$refs.table, {
-      data: this.tableData,
+        {
+        label:"Update Table",
+        action:function(e, row){
+          console.log('log this in update Table', this);
+          console.log('log vueInstance', vueInstance.jobs_filtered);
+         vueInstance.tabulator.setData(vueInstance.jobs_filtered);
+            // cell.setValue("");
+            // Update the Mongo DB document using the jobId with the value of the company domain
+        }
+    },
+    // NOT WORKING
+     {
+        label:"Add domain",
+        action:function(e, row){
+            let rowData = row.getData();
+            let companyOfficialUrl = rowData.companyOfficialUrl;
+            let jobId = rowData.jobId;
+            let rowInfo = {companyOfficialUrl, jobId};
+            // Update the Mongo DB document using the jobId with the value of the company domain
+            vueInstance.$emit('update-domain', rowInfo);
+        }
+    },
+    ],
+      data: this.jobs,
       reactiveData: true,
       layout: "fitColumns",
       columns: [
          { title: "", field: "logo",maxWidth:40, formatter: function (cell, formatterParams, onRendered) {
           let rowData = cell.getRow().getData();
           let url = rowData.companyLogoUrl ?  rowData.companyLogoUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
-          console.log("log url", url);
           return `<img src="${url}" style="height:40px;width:40px;">`;
          }
 
@@ -50,7 +82,7 @@ export default {
       { title: "Status", field: "status", sorter: "string", minWidth: 100 },
       { title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
       { title: "Company URL", field: "companyUrl", sorter: "string", minWidth: 200, visible: false },
-      { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, contextMenu:cellContextMenu, editor:'input'},
+      { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, editor:'input'},
       { title: "Job Location", field: "jobLocation", sorter: "string", minWidth: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", minWidth: 200, visible: false },

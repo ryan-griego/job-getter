@@ -2,14 +2,26 @@
     <v-container>
         <div className="overlay-intro"></div>
           <div>
-              <h1 class="text-center app-heading">Job Getter</h1>
-              <p class="text-center mb-2">Double click row to view more details</p>
-                <div style="background-color:#011918;">
-                  <p className="p-1">Total # of jobs {{ jobs.jobs.length }}</p>
-                </div>
-              <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-domain="updateDomain" :jobs="jobs.jobs" class="pt-2 mb-4"/>
-              <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Job Scraper</v-btn>
-              <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch New Jobs</v-btn>
+            <h1 class="text-center app-heading">Job Getter</h1>
+            <p class="text-center mb-2 outside-table">Double click row to view more details</p>
+    <!-- Filters -->
+    <v-row class="outside-table">
+      <v-col cols="5">
+        <v-btn outlined style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="resetFilters">Clear Filters</v-btn>
+      </v-col>
+      <v-col cols="2">
+     <v-select v-model="filters.status" :items="statuses" label="View by Status"></v-select>
+      </v-col>
+      <v-col cols="5">
+        <v-checkbox v-model="filters.isRemote" label="Remote"></v-checkbox>
+      </v-col>
+    </v-row>
+    <div style="background-color:#011918;">
+      <p className="p-1">Total # of jobs {{ numberOfJobs }}</p>
+    </div>
+        <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-domain="updateDomain" @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="pt-2 mb-4"/>
+      <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Job Scraper</v-btn>
+      <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch New Jobs</v-btn>
     <v-dialog
       v-model="isDialogOpen"
       width="auto"
@@ -19,13 +31,14 @@
         <v-card
           prepend-icon="mdi-email-fast-outline"
           title="Select Email Type"
+          dark
         >
           <v-divider class="mt-3"></v-divider>
           <v-card-text class="px-4" style="height: 100px;">
             <v-radio-group
               v-model="dialog"
-              messages="Select a email type"
               column
+              dark
             >
               <v-radio
                 label="Just Applied"
@@ -73,6 +86,13 @@ nextTick(() => {
 
 export default {
   data: () => ({
+    filters: {
+        //status: null,
+        isRemote: false,
+        // checkbox2: false,
+        staus: null,
+      },
+      statuses: ['Sent', 'Applied', 'Add more'],
     isDialogOpen: false,
     dialog: '',
     rowData: {},
@@ -117,8 +137,25 @@ export default {
 
   },
   computed: {
+    numberOfJobs() {
+      return this.jobs.jobs.length;
+    },
+    jobs_filtered() {
+      // What would be the most valuable default method to filter the data?
+      // MIGHT CONSIDER A SWITCH STATEMENT
 
-    // empty
+      if(this.filters.status === 'Sent') {
+        return this.jobs.jobs.filter(job => job.status === 'Sent');
+      }
+      if(this.filters.status === 'Applied') {
+        return this.jobs.jobs.filter(job => job.status === 'Applied');
+      }
+      if(this.filters.isRemote === true) {
+          return this.jobs.jobs.filter(job => job.remoteAllowed === true);
+      } else {
+      return this.jobs.jobs;
+      }
+    }
 
   },
   created() {
@@ -126,6 +163,12 @@ export default {
   },
   methods: {
     initialize() {
+    },
+    resetFilters() {
+      this.filters = {
+        isRemote: false,
+        status: null,
+      };
     },
 
     notify(reason) {
@@ -178,8 +221,25 @@ export default {
       });
 
       if(error.value === 'error') {
-        //return an error message
         this.notify('fail-update-domain');
+      }
+    },
+
+      async deleteRow(item) {
+      item = toRaw(item);
+
+      const { data, error } = await useFetch("/api/deleterow", {
+        method: "POST",
+         body: {
+             'jobId': item.jobId
+            }
+      });
+
+      if(error.value === 'error') {
+        this.notify('fail-update-domain');
+      } else {
+        // NEED TO ADD SUCCESS NOTIFICATION HERE
+        console.log("updateDomain was a success");
       }
     },
 
@@ -209,7 +269,6 @@ export default {
         //return an error message
       }
     },
-
 
     async getEmail(item) {
       item = toRaw(item);
@@ -1292,7 +1351,6 @@ export default {
         method: "POST",
         body: msg
       });
-       // check if the sendgrid email was a success, if so, update the status, if not, dont.
       if(error.value === 'error') {
         this.notify('fail-send-email');
       } else {

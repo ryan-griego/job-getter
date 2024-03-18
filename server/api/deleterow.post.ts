@@ -6,8 +6,6 @@ export default defineEventHandler(async (event) => {
   const uri = config.mongodbUri;
   const client = new MongoClient(uri);
 
-  console.log('log the body', body);
-
   try {
     await client.connect();
 

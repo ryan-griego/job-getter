@@ -1,13 +1,15 @@
 <template>
     <v-container>
-        <div className="overlay-intro"></div>
+        <!-- <div className="overlay-intro"></div> -->
           <div>
             <h1 class="text-center app-heading">Job Getter</h1>
             <p class="text-center mb-2 outside-table">Double click row to view more details</p>
     <!-- Filters -->
     <v-row class="outside-table">
       <v-col cols="5">
-        <v-btn outlined style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="resetFilters">Clear Filters</v-btn>
+        <v-btn outlined class="mr-4" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="resetFilters">Clear Filters</v-btn>
+
+        <v-btn outlined class="pr-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="updateTable">Refresh Data</v-btn>
       </v-col>
       <v-col cols="2">
      <v-select v-model="filters.status" :items="statuses" label="View by Status"></v-select>
@@ -17,9 +19,9 @@
       </v-col>
     </v-row>
     <div style="background-color:#011918;">
-      <p className="p-1">Total # of jobs {{ numberOfJobs }}</p>
+      <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
     </div>
-        <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-domain="updateDomain" @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="pt-2 mb-4"/>
+        <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow" @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="pt-2 mb-4" ref="main_table"/>
       <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Job Scraper</v-btn>
       <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch New Jobs</v-btn>
     <v-dialog
@@ -51,7 +53,7 @@
               ></v-radio>
             </v-radio-group>
           </v-card-text>
-          <v-divider></v-divider>\
+          <v-divider></v-divider>
           <v-card-actions>
             <v-btn
               text="Close"
@@ -143,32 +145,54 @@ export default {
     jobs_filtered() {
       // What would be the most valuable default method to filter the data?
       // MIGHT CONSIDER A SWITCH STATEMENT
+        return this.jobs.jobs.filter(job => {
+            let statusMatch = true;
+            let remoteMatch = true;
 
-      if(this.filters.status === 'Sent') {
-        return this.jobs.jobs.filter(job => job.status === 'Sent');
-      }
-      if(this.filters.status === 'Applied') {
-        return this.jobs.jobs.filter(job => job.status === 'Applied');
-      }
-      if(this.filters.isRemote === true) {
-          return this.jobs.jobs.filter(job => job.remoteAllowed === true);
-      } else {
-      return this.jobs.jobs;
-      }
+            if (this.filters.status) {
+              statusMatch = job.status === this.filters.status;
+            }
+
+            if (this.filters.isRemote) {
+              remoteMatch = job.remoteAllowed === true;
+            }
+            return statusMatch && remoteMatch;
+          })
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
+      // if(this.filters.status === 'Sent') {
+      //   return this.jobs.jobs.filter(job => job.status === 'Sent');
+      // }
+      // if(this.filters.status === 'Applied') {
+      //   return this.jobs.jobs.filter(job => job.status === 'Applied');
+      // }
+      // if(this.filters.isRemote === true) {
+      //     return this.jobs.jobs.filter(job => job.remoteAllowed === true);
+      // } else {
+      // return this.jobs.jobs;
+      // }
+    },
 
-  },
+
   created() {
     this.initialize()
   },
   methods: {
     initialize() {
     },
+    updateTable() {
+      this.$refs.main_table.updateTableData();
+    },
     resetFilters() {
+
       this.filters = {
         isRemote: false,
         status: null,
       };
+      this.$nextTick(() => {
+        this.updateTable();
+      });
+
     },
 
     notify(reason) {
@@ -176,8 +200,8 @@ export default {
         case "fail-scraper":
           useNuxtApp().$toast.error('JobScraper failed');
           break;
-        case "fail-update-domain":
-          useNuxtApp().$toast.error('Update domain failed');
+        case "fail-update-row":
+          useNuxtApp().$toast.error('Update row failed');
           break;
         case "fail-fetch-new-jobs":
           useNuxtApp().$toast.error('Fetch new jobs failed');
@@ -210,18 +234,20 @@ export default {
       }
     },
 
-    async updateDomain(item) {
+    async updateRow(item) {
       item = toRaw(item);
-      const { data, error } = await useFetch("/api/updatedomain", {
+      const { data, error } = await useFetch("/api/updaterow", {
         method: "POST",
          body: {
              'jobId': item.jobId,
              'domain': item.companyOfficialUrl,
+             'jobPosterName': item.jobPosterName,
+             'jobPosterEmail': item.jobPosterEmail,
             }
       });
 
       if(error.value === 'error') {
-        this.notify('fail-update-domain');
+        this.notify('fail-update-row');
       }
     },
 
@@ -236,10 +262,10 @@ export default {
       });
 
       if(error.value === 'error') {
-        this.notify('fail-update-domain');
+        this.notify('fail-delete-row');
       } else {
         // NEED TO ADD SUCCESS NOTIFICATION HERE
-        console.log("updateDomain was a success");
+        console.log("deleteRow was a success");
       }
     },
 
@@ -253,11 +279,14 @@ export default {
         let lastUrl = urls[urls.length -1];
         const getJobsJson = await fetch(lastUrl);
         let jobsData = await getJobsJson.json();
+        // DOUBLE CHECK THAT IF JOB POSTER INFORMATION IS COMING THROUGH THAT DUBPLICATE HEADERS ARE NOT CREATED
         jobsData = jobsData.map(job => ( {
             ...job,
             companyOfficialUrl: '',
             status: 'Applied',
             jobPosterEmail: '',
+            jobPosterName: '',
+            jobPosterProfileUrl: ','
         }));
           const { data: jobs } = await useFetch("/api/addjobs", {
             method: "POST",
@@ -271,6 +300,8 @@ export default {
     },
 
     async getEmail(item) {
+
+
       item = toRaw(item);
         try {
           const response = await fetch(`/api/getemail?domain=${item.companyOfficialUrl}&full_name=${item.jobPosterName}`);
@@ -288,6 +319,11 @@ export default {
              'email': data.data.email,
             }
           });
+           if(error.value === 'error') {
+        this.notify('fail-get-email');
+      } else {
+        this.notify('success-get-email');
+      }
           const vueInstance = this;
           // Need to refresh the tabulator show the data
         }
@@ -315,7 +351,7 @@ export default {
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
-      let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangrieg@gmail.com';
+      let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
      // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
 
       let msg = '';
@@ -336,11 +372,11 @@ export default {
             email: "ryangriego@gmail.com",
             name: "Ryan Griego / Software Engineer"
           },
-          "subject": `💌 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`,
+          "subject": `👋 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`,
           "content": [
             {
               type: "text/plain",
-              value: `💌 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`
+              value: `👋 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`
             },
             {
               type: "text/html",

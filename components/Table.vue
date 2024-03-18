@@ -3,7 +3,7 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useGlobalState } from '~/composables/state'
 
 export default {
-  emits: ['sendEmail', 'getEmail', 'updateDomain', 'deleteRow'],
+  emits: ['sendEmail', 'getEmail', 'updateRow', 'deleteRow'],
   props: {
       jobs: {
       type: Array,
@@ -25,50 +25,54 @@ export default {
 
   },
 
+  methods: {
+    updateTableData() {
+      this.tabulator.setData(this.jobs);
+    },
+  },
+
   mounted() {
 
     const vueInstance = this;
     const globalState = useGlobalState();
     this.tabulator = new Tabulator(this.$refs.table, {
-      pagination: "local",
-      paginationSize: 13,
+     // pagination: "local",
+     // paginationSize: 13,
       rowContextMenu: [
     {
         label:"Delete row",
         action:function(e, row){
            vueInstance.$emit('delete-row', row.getData());
-            row.delete();
-            // cell.setValue("");
-            // Update the Mongo DB document using the jobId with the value of the company domain
-
+           row.delete();
         }
     },
         {
-        label:"Update Table",
+        label:"Refresh Table",
         action:function(e, row){
-          console.log('log this in update Table', this);
-          console.log('log vueInstance', vueInstance.jobs_filtered);
          vueInstance.tabulator.setData(vueInstance.jobs_filtered);
-            // cell.setValue("");
             // Update the Mongo DB document using the jobId with the value of the company domain
         }
     },
     // NOT WORKING
      {
-        label:"Add domain",
+        label:"Update row",
         action:function(e, row){
             let rowData = row.getData();
             let companyOfficialUrl = rowData.companyOfficialUrl;
             let jobId = rowData.jobId;
-            let rowInfo = {companyOfficialUrl, jobId};
+            let jobPosterName = rowData.jobPosterName;
+            let jobPosterEmail = rowData.jobPosterEmail;
+
+            let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail};
             // Update the Mongo DB document using the jobId with the value of the company domain
-            vueInstance.$emit('update-domain', rowInfo);
+            vueInstance.$emit('update-row', rowInfo);
         }
     },
     ],
       data: this.jobs,
       reactiveData: true,
       layout: "fitColumns",
+      // This columns array can be generated dynamically in a computed property
       columns: [
          { title: "", field: "logo",maxWidth:40, formatter: function (cell, formatterParams, onRendered) {
           let rowData = cell.getRow().getData();
@@ -86,11 +90,16 @@ export default {
       { title: "Job Location", field: "jobLocation", sorter: "string", minWidth: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", minWidth: 200, visible: false },
+      { title: "Date Scraped", field: "timestamp", sorter: "date", minWidth: 100,formatter: (cell) => {
+       const date = new Date(cell.getValue());
+         return `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`;
+      },  },
+
       { title: "Job Description", field: "jobDescription", sorter: "string", minWidth: 200, visible: false },
       { title: "Workplace Type", field: "workplaceType", sorter: "string", minWidth: 100, visible: false  },
       { title: "Job Poster Profile URL", field: "jobPosterProfileUrl", sorter: "string", minWidth: 200, visible: false },
-      { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 100 },
-      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", minWidth: 200 },
+      { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 100, editor:'input' },
+      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", minWidth: 200, editor:'input' },
       { title: "Company Logo URL", field: "companyLogoUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Apply URL", field: "applyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Views Count", field: "viewsCount", sorter: "number", minWidth: 80, visible: false },
@@ -128,7 +137,6 @@ export default {
                 button.style.borderRadius = "5px";
                 button.style.cursor = "pointer";
                 button.innerHTML = 'Get Email';
-                console.log("log this.$refs.table", this.$refs);
                 button.addEventListener("click", (e) => {
                   vueInstance.$emit('get-email', cell.getRow().getData());
                 });

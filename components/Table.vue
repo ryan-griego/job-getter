@@ -46,13 +46,6 @@ export default {
            row.delete();
         }
     },
-        {
-        label:"Refresh Table",
-        action:function(e, row){
-         vueInstance.tabulator.setData(vueInstance.jobs_filtered);
-            // Update the Mongo DB document using the jobId with the value of the company domain
-        }
-    },
     // NOT WORKING
      {
         label:"Update row",

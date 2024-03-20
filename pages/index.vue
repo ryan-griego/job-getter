@@ -1,29 +1,36 @@
 <template>
     <v-container>
         <!-- <div className="overlay-intro"></div> -->
-          <div>
-            <h1 class="text-center app-heading">Job Getter</h1>
-            <p class="text-center mb-2 outside-table">Double click row to view more details</p>
-    <!-- Filters -->
-    <v-row class="outside-table">
-      <v-col cols="5">
-        <v-btn outlined class="mr-4" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="resetFilters">Clear Filters</v-btn>
-
-        <v-btn outlined class="pr-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="updateTable">Refresh Data</v-btn>
-      </v-col>
-      <v-col cols="2">
-     <v-select v-model="filters.status" :items="statuses" label="View by Status"></v-select>
-      </v-col>
-      <v-col cols="5">
-        <v-checkbox v-model="filters.isRemote" label="Remote"></v-checkbox>
-      </v-col>
-    </v-row>
+<div>
+<v-row class="outside-table d-flex align-end">
+  <v-col cols="2" class="d-flex align-center">
+    <img alt="Man 1" height="auto" src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1710832996/new-6_zuoc2x.jpg" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="300">
+  </v-col>
+   <v-col cols="1" class="d-flex align-end"></v-col>
+   <v-col cols="3" class="d-flex align-end mb-3">
+      <div class="text-end">
+        <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Scraper</v-btn>
+      </div>
+      <div class="text-end">
+        <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch Jobs</v-btn>
+      </div>
+      <div class="text-end">
+      <v-btn outlined class="pr-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="updateTable">Refresh Data</v-btn>
+      </div>
+   </v-col>
+<v-col cols="6" class="d-flex justify-end">
+      <span class="mr-2">Filters:</span>
+  <v-card outlined class="pa-2 d-flex flex-row align-start" style="border: .5px solid rgb(28, 255, 206); background-color: transparent; color: #1cffcefa;">
+    <v-checkbox v-model="filters.isRemote" label="Remote" class="pr-4"></v-checkbox>
+    <v-select v-model="filters.status" :items="statuses" label="View by Status" class="flex-grow-1" style="min-width: 200px;"></v-select>
+    <v-btn outlined class="mx-4 my-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="resetFilters">Clear Filters</v-btn>
+  </v-card>
+</v-col>
+</v-row>
     <div style="background-color:#011918;">
       <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
     </div>
-        <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow" @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="pt-2 mb-4" ref="main_table"/>
-      <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Job Scraper</v-btn>
-      <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch New Jobs</v-btn>
+      <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow" @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="mb-4" ref="main_table"/>
     <v-dialog
       v-model="isDialogOpen"
       width="auto"
@@ -46,7 +53,6 @@
                 label="Just Applied"
                 value="just-applied"
               ></v-radio>
-
               <v-radio
                 label="Thank you"
                 value="thankyou"
@@ -77,8 +83,8 @@
 <script>
 import Table from '../components/Table.vue';
 // Dark mode
-// import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
-import 'tabulator-tables/dist/css/tabulator.min.css';
+import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+// import 'tabulator-tables/dist/css/tabulator.min.css';
 
 nextTick(() => {
   if (process.client) {
@@ -89,12 +95,10 @@ nextTick(() => {
 export default {
   data: () => ({
     filters: {
-        //status: null,
         isRemote: false,
-        // checkbox2: false,
         staus: null,
       },
-      statuses: ['Sent', 'Applied', 'Add more'],
+      statuses: ['Sent', 'Applied'],
     isDialogOpen: false,
     dialog: '',
     rowData: {},
@@ -132,7 +136,6 @@ export default {
   async setup() {
     const { data: jobs } = await useFetch("/api/jobs");
     jobs.value = toRaw(jobs.value);
-
     return {
       jobs
     }
@@ -144,7 +147,7 @@ export default {
     },
     jobs_filtered() {
       // What would be the most valuable default method to filter the data?
-      // MIGHT CONSIDER A SWITCH STATEMENT
+      //CONSIDER A SWITCH STATEMENT
         return this.jobs.jobs.filter(job => {
             let statusMatch = true;
             let remoteMatch = true;
@@ -177,11 +180,27 @@ export default {
   created() {
     this.initialize()
   },
+  watch: {
+    'filters.isRemote': {
+      handler() {
+        this.updateTable();
+      },
+      immediate: true,
+    },
+    'filters.status': {
+      handler() {
+        this.updateTable();
+      },
+      immediate: true,
+    },
+  },
   methods: {
     initialize() {
     },
     updateTable() {
-      this.$refs.main_table.updateTableData();
+      setTimeout(() => {
+        this.$refs.main_table.updateTableData();
+      }, 100);
     },
     resetFilters() {
 
@@ -248,12 +267,13 @@ export default {
 
       if(error.value === 'error') {
         this.notify('fail-update-row');
+      } else {
+        this.updateTable();
       }
     },
 
       async deleteRow(item) {
       item = toRaw(item);
-
       const { data, error } = await useFetch("/api/deleterow", {
         method: "POST",
          body: {
@@ -298,10 +318,7 @@ export default {
         //return an error message
       }
     },
-
     async getEmail(item) {
-
-
       item = toRaw(item);
         try {
           const response = await fetch(`/api/getemail?domain=${item.companyOfficialUrl}&full_name=${item.jobPosterName}`);
@@ -601,11 +618,7 @@ export default {
                             <tbody>
                               <tr>
                               <td>
-                                <a href="https://www.ryangriego.com/" target="_blank">
-                                  <img alt="Ryan Griego logo" height="auto" class="emailImage"
-                                    src="https://www.ryangriego.com/images/portfolio-ryan-logo.png"
-                                    style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:90%;font-size:13px;" />
-                                </a>
+                               <h1 style="display:inline-block;color:#3d3b3b;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:26px;font-weight:normal;line-height:12px;text-decoration:none;text-transform:uppercase;padding:0px 10px;">Ryan Griego</h1>
                               </td>
                               </tr>
                             </tbody>
@@ -640,22 +653,24 @@ export default {
                             <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center"><tr><td style="padding:15px 10px;" class="" ><![endif]-->
                             <a class="mj-link" href="https://www.ryangriego.com"
                               target="_blank"
-                              style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
-                              <span style="letter-spacing:.2px">Portfolio</span>
+                              style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
+                            <span style="text-decoration: none; border-bottom: 2px solid #1a9ba2;letter-spacing:.2px;">Portfolio</span>
                             </a>
                             <!--[if mso | IE]></td><td style="padding:15px 10px;" class="" ><![endif]-->
                             <a class="mj-link"
                               href="https://www.ryangriego.com/assets/ryan_griego_resume.pdf"
                               target="_blank"
-                              style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
-                              <span style="letter-spacing:.2px">Resume</span>
+                              style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
+                            <span style="text-decoration: none; border-bottom: 2px solid #1a9ba2;letter-spacing:.2px;">Resume</span>
+                            </a>
                             </a>
                             <!--[if mso | IE]></td><td style="padding:15px 10px;" class="" ><![endif]-->
                             <a class="mj-link"
                               href="https://www.linkedin.com/in/ryan-griego-2134a340/"
                               target="_blank"
-                              style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
-                              <span style="letter-spacing:.2px">LinkedIn</span>
+                              style="display:inline-block;color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:16px;font-weight:normal;line-height:22px;text-decoration:none;text-transform:uppercase;padding:15px 10px;">
+                              <span style="text-decoration: none; border-bottom: 2px solid #1a9ba2;letter-spacing:.2px;">LinkedIn</span>
+                              </a>
                             </a>
                             <!--[if mso | IE]></td></tr></table><![endif]-->
                           </div>
@@ -689,7 +704,6 @@ export default {
                           <div
                             style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:40px;line-height:1;text-align:left;color:#ffffff;">
                             <p style="font-size: 22px;line-height: 1.8rem">Hi ${jobPosterName},</p>
-                            <p style="font-size: 13px;line-height: 1.2rem;">Thank you for taking my application.<br /></p>
                             <p style="font-size: 13px;line-height: 1.2rem;">I recently applied for the ${jobTitle} position at ${companyName} and
                               wanted to reach out and further express my interest in the&nbsp;position.<br /></p>
                           </div>
@@ -729,7 +743,7 @@ export default {
                             <tbody>
                               <tr>
                                 <td style="width:400px;">
-                                  <img alt="Clothes set" height="auto"
+                                  <img alt="Company Logo" height="auto"
                                     src="${companyLogoUrl}"
                                     style="border:none;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;"
                                     width="400" />
@@ -800,7 +814,7 @@ export default {
                             <tbody>
                               <tr>
                                 <td style="width:120px;">
-                                  <img alt="Chesterk tank" height="120"
+                                  <img alt="React" height="120"
                                     src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1626231480/portfolio/icons/react_yz6djo.png"
                                     style="border:none;display:block;outline:none;text-decoration:none;height:120px;width:100%;font-size:13px;"
                                     width="120" />
@@ -836,7 +850,7 @@ export default {
                             <tbody>
                               <tr>
                                 <td style="width:120px;">
-                                  <img alt="Beyond backpack" height="120"
+                                  <img alt="Vue" height="120"
                                     src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1626231952/portfolio/icons/vue_fq4345.png"
                                     style="border:none;display:block;outline:none;text-decoration:none;height:120px;width:100%;font-size:13px;"
                                     width="120" />
@@ -872,7 +886,7 @@ export default {
                             <tbody>
                               <tr>
                                 <td style="width:120px;">
-                                  <img alt="Jensen shorts" height="120"
+                                  <img alt="Javascript" height="120"
                                     src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1626231480/portfolio/icons/javascript_ifuclz.png"
                                     style="border:none;display:block;outline:none;text-decoration:none;height:120px;width:100%;font-size:13px;"
                                     width="120" />
@@ -921,7 +935,7 @@ export default {
                             <tbody>
                               <tr>
                                 <td style="width:129px;">
-                                  <img alt="Verdant cap" height="120"
+                                  <img alt="HTML5" height="120"
                                     src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1626231480/portfolio/icons/html5_kuymet.png"
                                     style="border:none;display:block;outline:none;text-decoration:none;height:120px;width:100%;font-size:13px;"
                                     width="129" />
@@ -957,7 +971,7 @@ export default {
                             <tbody>
                               <tr>
                                 <td style="width:120px;">
-                                  <img alt="Blake polo shirt" height="120"
+                                  <img alt="CSS3" height="120"
                                     src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1626231480/portfolio/icons/css3_qvw5pn.png"
                                     style="border:none;display:block;outline:none;text-decoration:none;height:120px;width:100%;font-size:13px;"
                                     width="120" />
@@ -993,8 +1007,8 @@ export default {
                             <tbody>
                               <tr>
                                 <td style="width:120px;">
-                                  <img alt="Sketch floral" height="120"
-                                    src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1626231952/portfolio/icons/photoshop_loaxdz.png"
+                                  <img alt="PHP" height="120"
+                                    src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1710817780/php-logo_yrgo45.png"
                                     style="border:none;display:block;outline:none;text-decoration:none;height:120px;width:100%;font-size:13px;"
                                     width="120" />
                                 </td>
@@ -1008,7 +1022,7 @@ export default {
                           style="font-size:0px;padding:10px 25px;padding-top:0;padding-right:25px;padding-bottom:0px;padding-left:25px;word-break:break-word;">
                           <div
                             style="font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;line-height:1;text-align:center;color:#000000;">
-                            <p>PHOTOSHOP</p>
+                            <p>PHP</p>
                           </div>
                         </td>
                       </tr>
@@ -1391,12 +1405,16 @@ export default {
         this.notify('fail-send-email');
       } else {
         this.notify('success-send-email');
-        const { status } = await useFetch("/api/updatestatus", {
+        const { status, error } = await useFetch("/api/updatestatus", {
           method: "POST",
           body: item.jobId
         });
+        if(error.value === 'error') {
+      } else {
+        this.updateTable();
       }
-    },
+    }
+  },
   },
 }
 </script>

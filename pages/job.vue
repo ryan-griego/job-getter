@@ -5,7 +5,6 @@ export default {
   setup() {
     const globalState = useGlobalState();
     const rowData = globalState.value.rowData;
-
     return {
       rowData
     };
@@ -18,7 +17,6 @@ export default {
   }
 }
 </script>
-
 <template>
   <v-container>
     <v-card color="#F5F5F5" class="mb-5">
@@ -30,7 +28,7 @@ export default {
       <v-card-text>
         <v-row>
           <v-col cols="12" sm="6">
-            <v-img :src="rowData.companyLogoUrl" alt="Company Logo" contain height="200px"></v-img>
+            <v-img :src="rowData.companyLogoUrl" alt="Company Logo" contain height="100px"></v-img>
           </v-col>
           <v-col cols="12" sm="6">
             <h2>{{ rowData.companyName }}</h2>

@@ -20,7 +20,7 @@ export default {
 <template>
   <v-container>
     <v-card color="#F5F5F5" class="mb-5">
-      <v-toolbar color="primary" dark>
+      <v-toolbar color="secondary" dark>
         <v-toolbar-title>{{ rowData.jobTitle }}</v-toolbar-title>
         <v-spacer></v-spacer>
         <NuxtLink to="/" class="white--text">Back</NuxtLink>
@@ -28,7 +28,7 @@ export default {
       <v-card-text>
         <v-row>
           <v-col cols="12" sm="6">
-            <v-img :src="rowData.companyLogoUrl" alt="Company Logo" contain height="100px"></v-img>
+            <v-img :src="rowData.companyLogoUrl" alt="Company Logo" contain height="300px"></v-img>
           </v-col>
           <v-col cols="12" sm="6">
             <h2>{{ rowData.companyName }}</h2>

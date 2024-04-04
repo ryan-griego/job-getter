@@ -9,9 +9,20 @@ export default defineEventHandler(async (event) => {
   try {
     await client.connect();
 
+    console.log("log the body in add jobs", body);
     const db = client.db('test');
+    const jobsCollection = db.collection('jobs');
 
-    await db.collection('jobs').insertMany(body);
+    for (const job of body) {
+      const filter = { jobId: job.jobId }; // Replace 'jobId' with your unique identifier
+      const update = { $set: job };
+      const options = { upsert: true };
+      await jobsCollection.updateOne(filter, update, options);
+    }
+
+
+
+    // await db.collection('jobs').insertMany(body);
 
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);

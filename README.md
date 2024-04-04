@@ -1,6 +1,29 @@
-# Nuxt 3 Minimal Starter
+# Job Getter App
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+
+Job Getter is a job application tracking tool designed to streamline your job search process. It allows users to store information about jobs they've applied to and easily email technical recruiters with more information about themselves.
+
+
+![Job Getter Screenshot](https://res.cloudinary.com/dm7y3yvjp/image/upload/v1712271923/job-getter-screenshot_lm1mtu.png)
+
+
+## Features
+
+- **Job Tracking**: Keep track of all the jobs you've applied to in one place. Job Getter stores information about each job, including the company name, job title, and date applied.
+
+- **Email Recruiters**: Easily send emails to technical recruiters with more information about yourself. This feature helps you stand out from other applicants and make a strong impression.
+
+## 3rd Party APIs Used
+
+- **Hunter.io**:
+
+- **SendGrid**:
+
+- **PhantomBuster**:
+
+## How to Use
+
+Currently working on how to make this usable for users other than myself
 
 ## Setup
 

@@ -1,90 +1,141 @@
 <template>
+  <!-- <v-app class="app-background">
+    <div class="d-flex"> -->
+  <!-- <v-navigation-drawer model-value="true" class="flex-shrink-0"
+        image="https://www.ryangriego.com/images/home-background-ryan-griego.jpeg">
+        <v-list-item title="Job Getter" subtitle="navigation" base-color="white"></v-list-item>
+        <v-divider class="mt-10"></v-divider>
+        <v-list-item link title="Home" base-color="white"></v-list-item>
+        <v-list-item link base-color="white">
+          <NuxtLink to="/" class="white--text">Keywords</NuxtLink>
+        </v-list-item>
+        <v-list-item link title="Analytics" base-color="white"></v-list-item>
+        <v-list-item link title="Feature Request" base-color="white"></v-list-item>
+      </v-navigation-drawer> -->
   <v-container>
-    <!-- <div className="overlay-intro"></div> -->
+    <div className="overlay-intro"></div>
     <div>
-    <v-row class="outside-table d-flex align-end">
-      <v-col cols="2" class="d-flex align-center">
-        <img alt="Man 1" height="auto" src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1710832996/new-6_zuoc2x.jpg" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="300">
-      </v-col>
-      <v-col cols="1" class="d-flex align-end"></v-col>
-      <v-col cols="3" class="d-flex align-end mb-3">
+      <v-row class="outside-table d-flex align-end">
+        <v-col cols="2" class="d-flex align-center">
+          <img alt="Job Getter logo" height="auto"
+            src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1710832996/new-6_zuoc2x.jpg"
+            style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;"
+            width="300">
+        </v-col>
+        <v-col cols="1" class="d-flex align-end"></v-col>
+        <v-col cols="3" class="d-flex align-end mb-3">
           <div class="text-end">
-            <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="runJobScraper">Run Scraper</v-btn>
+            <v-btn color="rgb(28, 255, 206)" class="m-3" @click="runJobScraper">Run Scraper</v-btn>
           </div>
           <div class="text-end">
-            <v-btn color="rgb(28, 255, 206)" class="mr-3" @click="fetchNewJobs">Fetch Jobs</v-btn>
+            <v-btn color="rgb(28, 255, 206)" class="m-3" @click="fetchNewJobs">Fetch Jobs</v-btn>
           </div>
           <div class="text-end">
-            <v-btn outlined class="pr-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="updateTable">Refresh Data</v-btn>
+            <v-btn outlined class="m-3" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text
+              @click="openAddJobModal">Add Job</v-btn>
           </div>
-      </v-col>
-      <v-col cols="6" class="d-flex justify-end">
-            <span class="mr-2">Filters:</span>
-        <v-card outlined class="pa-2 d-flex flex-row align-start" style="border: .5px solid rgb(28, 255, 206); background-color: transparent; color: #1cffcefa;">
-          <v-checkbox v-model="filters.isRemote" label="Remote" class="pr-4"></v-checkbox>
-          <v-select v-model="filters.status" :items="statuses" label="View by Status" class="flex-grow-1" style="min-width: 200px;"></v-select>
-          <v-btn outlined class="mx-4 my-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text @click="resetFilters">Clear Filters</v-btn>
-        </v-card>
-      </v-col>
-    </v-row>
-    <div style="background-color:#011918;">
-      <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
-    </div>
-    <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow" @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="mb-4" ref="main_table"/>
-        <v-dialog
-          v-model="isDialogOpen"
-          width="auto"
-          scrollable
-        >
-          <template v-slot:default="{ isActive }">
-            <v-card
-              prepend-icon="mdi-email-fast-outline"
-              title="Select Email Type"
-              dark
-            >
-              <v-divider class="mt-3"></v-divider>
-              <v-card-text class="px-4" style="height: 100px;">
-                <v-radio-group
-                  v-model="dialog"
-                  column
-                  dark
-                >
-                  <v-radio
-                    label="Just Applied"
-                    value="just-applied"
-                  ></v-radio>
-                  <v-radio
-                    label="Thank you"
-                    value="thankyou"
-                  ></v-radio>
-                </v-radio-group>
-              </v-card-text>
-              <v-divider></v-divider>
-              <v-card-actions>
-                <v-btn
-                  text="Close"
-                  @click="isActive.value = false"
-                ></v-btn>
-                <v-spacer></v-spacer>
-                <v-btn
-                  color="surface-variant"
-                  text="Send"
-                  variant="flat"
-                  @click="isActive.value = false; sendEmail()"
-                ></v-btn>
-              </v-card-actions>
-            </v-card>
-          </template>
-        </v-dialog>
+        </v-col>
+        <v-col cols="6" class="d-flex justify-end">
+          <span class="mr-2">Filters:</span>
+          <v-card outlined class="pa-2 d-flex flex-row align-start"
+            style="border: .5px solid rgb(28, 255, 206); background-color: transparent; color: #1cffcefa;">
+            <v-checkbox v-model="filters.isRemote" label="Remote" class="pr-4"></v-checkbox>
+            <v-select v-model="filters.status" :items="statuses" label="View by Status" class="flex-grow-1"
+              style="min-width: 200px;"></v-select>
+            <v-btn outlined class="mx-4 my-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text
+              @click="resetFilters">Clear Filters</v-btn>
+          </v-card>
+        </v-col>
+      </v-row>
+      <div style="background-color:#011918;">
+        <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
       </div>
-   </v-container>
+      <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow"
+        @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="mb-4" ref="main_table" />
+      <v-dialog v-model="isEmailDialogOpen" width="auto" scrollable>
+        <template v-slot:default="{ isActive }">
+          <v-card prepend-icon="mdi-email-fast-outline" title="Select Email Type" dark>
+            <v-divider class="mt-3"></v-divider>
+            <v-card-text class="px-4" style="height: 100px;">
+              <v-radio-group v-model="dialog" column dark>
+                <v-radio label="Just Applied" value="just-applied"></v-radio>
+                <v-radio label="Thank you" value="thankyou"></v-radio>
+              </v-radio-group>
+            </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+              <v-btn text="Close" @click="isActive.value = false"></v-btn>
+              <v-spacer></v-spacer>
+              <v-btn color="surface-variant" text="Send" variant="flat"
+                @click="isActive.value = false; sendEmail()"></v-btn>
+            </v-card-actions>
+          </v-card>
+        </template>
+      </v-dialog>
+      <v-dialog v-model="isAddJobDialogOpen" width="50%" scrollable>
+        <template v-slot:default="{ isActive }">
+          <v-card prepend-icon="mdi-email-fast-outline" title="Add Job" dark>
+            <v-divider class="mt-3"></v-divider>
+            <v-card-text class="px-4">
+              <v-form ref="form">
+                <v-text-field v-model="job.jobId" label="Job ID"></v-text-field>
+                <v-text-field v-model="job.jobTitle" label="Job Title*"
+                  :rules="[v => !!v || 'Job Title is required']"></v-text-field>
+                <v-text-field v-model="job.status" label="Status"></v-text-field>
+                <v-text-field v-model="job.companyName" label="Company Name*"
+                  :rules="[v => !!v || 'Company name is required']"></v-text-field>
+                <v-text-field v-model="job.companyUrl" label="Company URL"></v-text-field>
+                <v-text-field v-model="job.companyOfficialUrl" label="Company Official Url"></v-text-field>
+                <v-text-field v-model="job.jobLocation" label="Job Location"></v-text-field>
+                <v-text-field v-model="job.postedAt" label="Posted At"></v-text-field>
+                <v-text-field v-model="job.appliesClosedAt" label="Applies Closed At"></v-text-field>
+                <v-text-field v-model="job.timestamp" label="Date Scraped"></v-text-field>
+                <v-text-field v-model="job.jobDescription" label="Job Description"></v-text-field>
+                <v-text-field v-model="job.matchingKeywords" label="Matching Keywords"></v-text-field>
+                <v-text-field v-model="job.workplaceType" label="Workplace Type"></v-text-field>
+                <v-text-field v-model="job.jobPosterProfileUrl" label="Job Poster Profile URL"></v-text-field>
+                <v-text-field v-model="job.jobPosterName" label="Job Poster Name"></v-text-field>
+                <v-text-field v-model="job.jobPosterEmail" label="Job Poster Email"></v-text-field>
+                <v-text-field v-model="job.companyLogoUrl" label="Company Logo URL"></v-text-field>
+                <v-text-field v-model="job.applyUrl" label="Apply URL"></v-text-field>
+                <v-text-field v-model="job.viewsCount" label="Views Count"></v-text-field>
+                <v-text-field v-model="job.companyStaffCount" label="Company Staff Count"></v-text-field>
+                <v-text-field v-model="job.companyDescription" label="Company Description"></v-text-field>
+                <v-text-field v-model="job.jobIndustries" label="Job Industries"></v-text-field>
+                <v-text-field v-model="job.source" label="Source"></v-text-field>
+                <v-text-field v-model="job.jobFunctions" label="Job Functions"></v-text-field>
+                <v-text-field v-model="job.remoteAllowed" label="Remote Allowed"></v-text-field>
+                <v-text-field v-model="job.jobType" label="Job Type"></v-text-field>
+                <v-text-field v-model="job.applicantsCount" label="Applicants Count"></v-text-field>
+                <v-text-field v-model="job.experienceLevel" label="Experience Level"></v-text-field>
+              </v-form>
+            </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+              <v-btn text="Close" @click="isActive.value = false"></v-btn>
+              <v-spacer></v-spacer>
+              <v-btn color="surface-variant" text="Submit" variant="flat" @click="submitForm()"></v-btn>
+            </v-card-actions>
+          </v-card>
+        </template>
+      </v-dialog>
+    </div>
+  </v-container>
+  <!-- </div>
+  </v-app> -->
 </template>
+
+<style scoped>
+.app-background {
+  background: url('https: //www.ryangriego.com/images/home-background-ryan-griego.jpeg') !important;
+}
+</style>
 
 <script>
 import Table from '../components/Table.vue';
 // Dark mode
-// import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
-import 'tabulator-tables/dist/css/tabulator.min.css';
+import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+// import 'tabulator-tables/dist/css/tabulator.min.css';
 
 nextTick(() => {
   if (process.client) {
@@ -99,11 +150,37 @@ export default {
         staus: null,
       },
       statuses: ['Sent', 'Applied'],
-    isDialogOpen: false,
+    isEmailDialogOpen: false,
+    isAddJobDialogOpen: false,
     dialog: '',
     rowData: {},
     mySkills: ['React', 'Vue', 'PHP'],
     jobs: [],
+    valid: true,
+    job: {
+      jobId: '',
+      jobTitle: '',
+      status: '',
+      companyName: '',
+      companyUrl: '',
+      jobLocation: '',
+      jobDescription: '',
+      workplaceType: '',
+      jobPosterName: '',
+      jobPosterEmail: '',
+      companyLogoUrl: '',
+      applyUrl: '',
+      viewsCount: '',
+      companyStaffCount: '',
+      companyDescription: '',
+      jobIndustries: '',
+      jobFunctions: '',
+      remoteAllowed: '',
+      jobType: '',
+      applicantsCount: '',
+      experienceLevel: '',
+      source: '',
+    },
   }),
 
   async setup() {
@@ -154,6 +231,50 @@ export default {
   },
   methods: {
     initialize() {
+    },
+    async submitForm() {
+
+      // this.job.jobPosterEmail = "test@delphiretech.com";
+      // this.status = "";
+      // this.companyUrl = "https://www.linkedin.com/company/delphire";
+      // this.companyName = "Delphire Inc";
+      // this.jobTitle = "Software Engineer";
+      // this.jobLocation = "Los Angeles; CA";
+      // this.postedAt = "2023-10-29T22:59:23.000Z";
+      // this.appliesClosedAt = "2024-04-26T22:59:06.000Z";
+      // this.jobDescription = "Software Engineer with some Embedded Systems Experience Search\n Required Qualifications\n 2 years of experience working on a combination of hardware and software. i.e. an IOT system that is field deployed or car industry related.Please tailor your resume to the following Required Qualifications and include a second page highlighting the projects that you worked to fulfill those qualifications and your role / contribution to those projects.Proven system testing and validation ability.Experience Working experience with FPGAs; Microcontrollers.We are looking for someone who takes initiative to find new and improved ways to get things done; is action oriented and achieves results.Ability to solve end-to-end problems and Translate user requirements to design requirements. Preferred Qualifications:Advanced degree (e.g. Master's; PhD; etc) in an engineering-related field.A passion for tackling the wildfire challenge.Experience in field-deployed systems (i.e. weather stations; IOT devices) that operate off-grid.Experience working at a startup or on a small; fast-moving team.Ability to foresee issues and design in flexibility and workarounds for both known and unknown unknowns.Good skills and interest in mentorship BenefitsCompetitive Salary.Fully covered health Benefits and PTO; subject to change.Flexible Work Schedules!Accelerated Career Growth!Startup Equity Stake Job DescriptionOur Company is looking for an IoT Embedded Hardware Engineer to work as a member of our growing team. You will be responsible for hardware development on our early wildfire detection system. You will work directly with our software team to innovate with and improve our current software systems and platform. The goal is to transition our prototype to a Minimum Commercial Unit so you will gain hands on experience in that process. This position will require a fair amount of hands-on work and testing of our platform. The main work will be out of our office at the LKIC Campus in downtown LA and other field locations as necessary. You will have access to a state-of-the-art prototyping facility and machine shop. We have some great partners and advisors that can provide support to this position. This position requires a self-motivated; dynamic individual with strong technical and communication skills. We are looking for someone who takes initiative to find new and improved ways to get things done; is action oriented and achieves results. You will also be a key contributor to product definition and resulting detailed device performance and functional requirements specifications.\n About DelphireDelphire’s mission is to reduce the occurrence and impact of wildfires caused by downed or damaged power lines of the electric grid by supplying our utility customers with an early detection and warning system that can report fires; provide photographs for human confirmation and assessment prior to resource deployment all in their earliest stages even from low connectivity environments. We differentiate from other wildfire AI detection technologies by working below the canopy line; along the grid assets; to detect fires and faults during the incipient phase; thus helping to stop fires before they reach their critical self‐sustaining stage; and simultaneously provide information on their root cause enhancing future prevention. Both aspects are improvements to the state‐of‐the‐art capabilities for our utility customers that Delphire is working with through a unique combination of hardware and software advances. Learn more about us at www.delphiretech.com\n References required.";
+      // this.jobId  =3745290039;
+      // this.workplaceType = "On-site";
+      // this.companyLogoUrl = "https://www.linkedin.com/in/gilberto-desalvo-74b498a6";
+      // this.applyUrl = "John Smith";
+      // this.experienceLevel = "https://media.licdn.com/dms/image/C560BAQGxvjHURpAHnA/company-logo_400_400/0/1675743016492/delphire_logo?e=1714003200&v=beta&t=CN4I50rXA5FNCkuljbbwmD_li4JIV3-QzzjQDEd2yaY";
+      // this.applicantsCount = "https://www.linkedin.com/job-apply/3745290039";
+      // this.viewsCount = "1150";
+      // this.companyStaffCount = "4253";
+      // this.companyDescription = "4";
+      // this.jobIndustries = "Global warming increases grid-sparked wildfires to account for 30% of California’s annual burn area; releasing CO2 equivalent to 65% of the state’s transportation-related emissions. Better identification of required maintenance; especially in remote areas; could prevent most of these devastating fires. Delphire’s powerline monitoring system solves this problem by enabling automated; frequent; and cheap inspection of lines. Plus; our system identifies fires that do break out and transmits alerts within seconds - minimizing damages; power disruptions; and CO2 impact.";
+      // this.jobFunctions = "";
+      // this.remoteAllowed = "";
+      // this.jobState = "FALSE";
+      // this.jobType = "LISTED";
+      // this.timestamp = "Full-time";
+      // this.query = "2024-01-22T18:23:52.311Z";
+      // this.jobPosterProfileUrl = "https://www.linkedin.com/jobs/view/3745290039/?eBP=CwEAAAGNMi1gsTOrD_rMJ8jE2uu_yYt5anfIUDqac7C9VVHBsoE9aSeuaFXPErTOT0xvjYXKQOOs12jVRnLQiL3cKbCqo3OGdEvd1bUtFYvQRS2pzegkgPWTz2eiY8tIXLYZZt1WWu6xoA7ytQaG7PLZ3Orjy8Bfc-Rm2tD55qZ_9yh-ngWWXfy_wFfkxfnACFo913WrW8h8VhCq09Ga-Rbq9ZN_l1uspZR6kNRxVJrYg2RFylvt5SC-u0BXCk5h5yc1YYJNh-r6BIkONx88Yh5TTuoIlsKpvvX7um5nsUDODJkN-weCwLk5ltVYO0KH_B_dyRLif25VIwGN_RY9K91fwHujhn1wEnq48K8mY_KIiQ7sxJ-H6mPQEp-e1XtNiBKlEsqBocWckHj9tjDQvHgfOduRkz0&refId=4%2FSq1VUQB0mN3NMC3yANFA%3D%3D&trackingId=g2nGQXmEPq1f4c727RD4Hg%3D%3D&trk=flagship3_search_srp_jobs#/";
+      // this.jobPosterName = "";
+
+      let job = this.job;
+      const isValid = this.$refs.form.validate();
+
+      if (isValid) {
+        const { data: jobs } = await useFetch("/api/addjobs", {
+          method: "POST",
+          body: {
+            data: job,
+            type: 'single',
+          },
+        });
+        // this.isAddJobDialogOpen = false;
+      }
     },
     updateTable() {
       setTimeout(() => {
@@ -207,10 +328,9 @@ export default {
         const { data, error } = await useFetch("/api/runjobscraper", {
           method: "POST",
         });
-        console.log("log the error in runJobScraper", error);
           this.notify('success-scraper');
       } catch (error) {
-        console.error('Error during fetch operation:', error);
+        console.error('Error during fetch operation in runJobScraper:', error);
         this.notify('fail-scraper');
       }
     },
@@ -256,6 +376,7 @@ export default {
       });
       if(data.value.output) {
         let output = data.value.output;
+        console.log('log the output in fetchNewJobs', output);
         let urls = output.match(/https?:\/\/[^\s]+/g);
         let lastUrl = urls[urls.length -1];
         const getJobsJson = await fetch(lastUrl);
@@ -273,25 +394,67 @@ export default {
             job.companyOfficialUrl = companyUrl.toLowerCase();
           }
 
+          // Check through the jobDescription and find number of matching keywords
+          // This has to be taken out an accessible throughou the app and apply in real time to the data coming into the tabulator
+
+          let keywords = [
+            "PHP",
+            "Nuxt.js",
+            "Next.js",
+            "JavaScript",
+            "TypeScript",
+            "React",
+            "Vue",
+            "HTML",
+            "CSS",
+            "Node.js",
+            "Express.js",
+            "MongoDB",
+            "SQL",
+            "Git",
+            "Webpack",
+            "Babel",
+            "GSAP",
+            "MySQL",
+            "Tailwind CSS",
+          ];
+
+          let jobDescription = job.jobDescription;
+
+          let keywordCounts = keywords.reduce((counts, keyword) => {
+            let regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+            let matches = jobDescription.match(regex);
+            if (matches) {
+              counts[keyword] = matches.length;
+            }
+            return counts;
+          }, {});
+
           return {
             ...job,
             companyOfficialUrl: job.companyOfficialUrl,
             status: 'Applied',
-            jobPosterEmail: ''
+            jobPosterEmail: '',
+            source: 'LinkedIn'
           };
         });
 
           const { data: jobs } = await useFetch("/api/addjobs", {
             method: "POST",
-            body: jobsData
-        });
+            body: {
+              data: jobsData,
+              type: 'multi',
+            },
+          });
 
-      if(error.value === 'error') {
-         this.notify('fail-fetch-new-jobs');
-        //return an error message
-      }
+          if(error.value === 'error') {
+            this.notify('fail-fetch-new-jobs');
+            //return an error message
+          }
       }
     },
+    // Might not need this function VV
+
     async getEmail(item) {
       item = toRaw(item);
         try {
@@ -329,7 +492,11 @@ export default {
 
     openEmailModal(rowData) {
       this.rowData = toRaw(rowData);
-      this.isDialogOpen = true;
+      this.isEmailDialogOpen = true;
+    },
+
+    openAddJobModal() {
+      this.isAddJobDialogOpen = true;
     },
 
     async sendEmail() {
@@ -343,7 +510,7 @@ export default {
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
       let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
-       //  let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+     // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let msg = '';
 
       if(this.dialog === 'just-applied') {
@@ -936,11 +1103,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -996,11 +1158,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -1257,11 +1414,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -1348,11 +1500,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -1666,11 +1813,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -1966,11 +2108,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -2057,11 +2194,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -2258,11 +2390,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -2458,11 +2585,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -2509,11 +2631,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">

@@ -18,6 +18,7 @@ export default {
     return {
       tabulator: null,
       tableData: this.jobs,
+      keywords: [],
     }
   },
 
@@ -89,6 +90,46 @@ export default {
       },  },
 
       { title: "Job Description", field: "jobDescription", sorter: "string", minWidth: 200, visible: false },
+        {
+          title: "Matching Keywords", field: "matchingKeywords", sorter: "string", minWidth: 200, visible: true, formatter: function (cell) {
+            let rowData = toRaw(cell.getRow().getData());
+            let keywords = toRaw(globalState.value.keywords);
+            let jobDescription = rowData.jobDescription;
+
+            if (rowData.jobDescription) {
+              let jobDescription = rowData.jobDescription;
+              let keywordCounts = keywords.reduce((counts, keyword) => {
+                let regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                let matches = jobDescription.match(regex);
+                if (matches) {
+                  counts[keyword] = matches.length;
+                }
+                return counts;
+              }, {});
+
+              let keywordMatchCount = Object.keys(keywordCounts).length;
+              let keywordCountsArray = Object.entries(keywordCounts);
+              let keywordCountsString = keywordCountsArray.map(function ([keyword, count], index) {
+
+
+                if (index === keywordCountsArray.length - 1) {
+                  return keyword;
+                } else {
+                  return keyword + ', ';
+                }
+              }).join('');
+
+              if(keywordMatchCount == 0) {
+                return 'None';
+              }
+
+              keywordCountsString = 'Total: ' + keywordMatchCount + '</br>' + keywordCountsString;
+              return keywordCountsString;
+
+            }
+              return 'None';
+          } },
+
       { title: "Workplace Type", field: "workplaceType", sorter: "string", minWidth: 100, visible: false  },
       { title: "Job Poster Profile URL", field: "jobPosterProfileUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 100, editor:'input' },
@@ -99,6 +140,7 @@ export default {
       { title: "Company Staff Count", field: "companyStaffCount", sorter: "number", minWidth: 200, visible: false },
       { title: "Company Description", field: "companyDescription", sorter: "string", minWidth: 200, visible: false },
       { title: "Job Industries", field: "jobIndustries", sorter: "string", minWidth: 200, visible: false  },
+      { title: "Source", field: "source", sorter: "string", minWidth: 200, visible: true },
       { title: "Job Functions", field: "jobFunctions", sorter: "string", minWidth: 200, visible: false },
       { title: "Remote Allowed", field: "remoteAllowed", sorter: "boolean", minWidth: 40 },
       { title: "Job Type", field: "jobType", sorter: "string", minWidth: 80, visible: false },
@@ -160,12 +202,10 @@ export default {
       globalState.value.rowData = rowData;
         this.tabulator.redraw(true);
         navigateTo("/job")
-
     });
   }
 }
 </script>
-
 <template>
   <div ref="table"></div>
 </template>

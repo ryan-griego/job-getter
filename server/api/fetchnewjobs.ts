@@ -2,7 +2,7 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const body = await readBody(event);
 
-  const fetchNewJobsRequest = await $fetch("https://api.phantombuster.com/api/v2/agents/fetch-output?id=5284307839024607",
+  const fetchNewJobsRequest = await $fetch("https://api.phantombuster.com/api/v2/agents/fetch-output?id=5856204708943050",
     {
       method: "GET",
       headers: {

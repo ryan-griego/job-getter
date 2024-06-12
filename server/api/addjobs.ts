@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
     if(body.type === "multi") {
       await db.collection('jobs').insertMany(body.data);
     } else {
+      console.log("lo gthe data going in add jobs", body.data);
       await db.collection('jobs').insertOne(body.data);
     }
-
 
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);

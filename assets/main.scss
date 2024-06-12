@@ -4,13 +4,32 @@
 
 
 body {
-    background-image: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+   // background-image: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg') !important;
     background-repeat: repeat-y;
+   // padding: 20px;
     //color: white;
 }
 
+
 .app-background {
-  background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+ // background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+  background-repeat: repeat-y;
+}
+
+.v-application__wrap {
+  // background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+  background-repeat: repeat-y;
+}
+
+
+.v-main {
+    // background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+    background-repeat: repeat-y;
+}
+
+.v-container {
+  padding: 0px !important;
+
 }
 
 .app-heading {
@@ -20,9 +39,21 @@ body {
   text-shadow: 2px 4px 3px rgba(0, 0, 0, 0.3);
 }
 
+.white--text {
+  color: #fff;
+}
+
+.no-pad {
+  padding: 0px !important;
+
+}
+
+
 .outside-table {
-  color: #1cffcefa;
-  background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
+  width: 80%;
+  margin: 0 auto !important;
+//  color: #1cffcefa;
+  // background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
 }
 
 .overlay-intro {
@@ -40,4 +71,14 @@ body {
 
 h1, button {
   color:#fff;
+}
+
+.tabulator {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.tabulator-col {
+  background-color: rgb(6, 94, 9)!important;
+  color:white;
 }

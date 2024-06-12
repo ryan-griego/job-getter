@@ -84,7 +84,8 @@ export default {
       { title: "Job Location", field: "jobLocation", sorter: "string", minWidth: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", minWidth: 200, visible: false },
-      { title: "Date Scraped", field: "timestamp", sorter: "date", minWidth: 100,formatter: (cell) => {
+      { title: "Added", field: "timestamp", sorter: "date", minWidth: 100,formatter: (cell) => {
+
        const date = new Date(cell.getValue());
          return `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`;
       },  },
@@ -132,20 +133,20 @@ export default {
 
       { title: "Workplace Type", field: "workplaceType", sorter: "string", minWidth: 100, visible: false  },
       { title: "Job Poster Profile URL", field: "jobPosterProfileUrl", sorter: "string", minWidth: 200, visible: false },
-      { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 100, editor:'input' },
-      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", minWidth: 200, editor:'input' },
+      { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 150, editor:'input' },
+      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", minWidth: 150, editor:'input' },
       { title: "Company Logo URL", field: "companyLogoUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Apply URL", field: "applyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Views Count", field: "viewsCount", sorter: "number", minWidth: 80, visible: false },
       { title: "Company Staff Count", field: "companyStaffCount", sorter: "number", minWidth: 200, visible: false },
       { title: "Company Description", field: "companyDescription", sorter: "string", minWidth: 200, visible: false },
       { title: "Job Industries", field: "jobIndustries", sorter: "string", minWidth: 200, visible: false  },
-      { title: "Source", field: "source", sorter: "string", minWidth: 200, visible: true },
+      { title: "Source", field: "source", sorter: "string", minWidth: 100, visible: true },
       { title: "Job Functions", field: "jobFunctions", sorter: "string", minWidth: 200, visible: false },
-      { title: "Remote Allowed", field: "remoteAllowed", sorter: "boolean", minWidth: 40 },
+      { title: "Remote Allowed", field: "remoteAllowed", sorter: "boolean", minWidth: 40, visible: false },
       { title: "Job Type", field: "jobType", sorter: "string", minWidth: 80, visible: false },
       { title: "Applicants Count", field: "applicantsCount", sorter: "number", minWidth: 80, visible: false },
-      { title: "Experience Level", field: "experienceLevel", sorter: "string", minWidth: 100 },
+      { title: "Experience Level", field: "experienceLevel", sorter: "string", minWidth: 100, visible: false },
        {
           title: "Actions",
           field: "actions",
@@ -166,8 +167,8 @@ export default {
               return button;
             } else if(!rowData.jobPosterEmail && rowData.companyOfficialUrl && rowData.jobPosterName) {
                 let button = document.createElement("button");
-                button.style.padding = "2px";
-                button.style.backgroundColor = "blue";
+                button.style.padding = "4px";
+                button.style.backgroundColor = "green";
                 button.style.border = "none";
                 button.style.borderRadius = "5px";
                 button.style.cursor = "pointer";

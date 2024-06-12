@@ -12,11 +12,11 @@
         <v-list-item link title="Analytics" base-color="white"></v-list-item>
         <v-list-item link title="Feature Request" base-color="white"></v-list-item>
       </v-navigation-drawer> -->
-  <v-container>
-    <div className="overlay-intro"></div>
+  <v-container fluid pa-0 class="app-background">
+    <!-- <div className="overlay-intro"></div> -->
     <div>
       <v-row class="outside-table d-flex align-end">
-        <v-col cols="2" class="d-flex align-center">
+        <v-col cols="2" class="d-flex align-center no-pad">
           <img alt="Job Getter logo" height="auto"
             src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1710832996/new-6_zuoc2x.jpg"
             style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;"
@@ -24,30 +24,101 @@
         </v-col>
         <v-col cols="1" class="d-flex align-end"></v-col>
         <v-col cols="3" class="d-flex align-end mb-3">
-          <div class="text-end">
-            <v-btn color="rgb(28, 255, 206)" class="m-3" @click="runJobScraper">Run Scraper</v-btn>
+          <!-- <div class="text-end">
+            <v-btn class="m-3" @click="runJobScraper">Run Scraper</v-btn>
           </div>
           <div class="text-end">
-            <v-btn color="rgb(28, 255, 206)" class="m-3" @click="fetchNewJobs">Fetch Jobs</v-btn>
+            <v-btn class="m-3" @click="fetchNewJobs">Fetch Jobs</v-btn>
           </div>
           <div class="text-end">
-            <v-btn outlined class="m-3" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text
+            <v-btn outlined class="m-3" text
               @click="openAddJobModal">Add Job</v-btn>
-          </div>
+          </div> -->
+  <v-bottom-sheet v-model="sheet">
+    <template v-slot:activator="{ props }">
+      <div class="text-center">
+        <v-btn
+          v-bind="props"
+          color="green"
+          size="x-large"
+          text="Get it"
+        ></v-btn>
+      </div>
+    </template>
+
+    <v-list>
+      <v-list-subheader>Actions</v-list-subheader>
+
+      <v-list-item
+        v-for="tile in tiles"
+        :key="tile.title"
+        :prepend-avatar="`https://cdn.vuetifyjs.com/images/bottom-sheets/${tile.img}`"
+        :title="tile.title"
+        @click="sheet = false;takeAction(tile.title)"
+      ></v-list-item>
+    </v-list>
+  </v-bottom-sheet>
         </v-col>
-        <v-col cols="6" class="d-flex justify-end">
-          <span class="mr-2">Filters:</span>
-          <v-card outlined class="pa-2 d-flex flex-row align-start"
-            style="border: .5px solid rgb(28, 255, 206); background-color: transparent; color: #1cffcefa;">
+        <v-col cols="6" class="d-flex justify-end no-pad">
+          <!-- <span class="mr-2">Filters:</span>
+          <v-card outlined class="pa-2 d-flex flex-row align-start">
             <v-checkbox v-model="filters.isRemote" label="Remote" class="pr-4"></v-checkbox>
             <v-select v-model="filters.status" :items="statuses" label="View by Status" class="flex-grow-1"
               style="min-width: 200px;"></v-select>
-            <v-btn outlined class="mx-4 my-2" style="background-color: rgba(250,250,250,0.2);color: #1cffcefa;" text
+            <v-btn outlined class="mx-4 my-2" text
               @click="resetFilters">Clear Filters</v-btn>
-          </v-card>
+          </v-card> -->
+
+
+
+
+
+
+                  <v-slide-x-reverse-transition>
+
+
+                    <div v-if="showFilters" class="overlay">
+                     <v-select v-model="filters.status" :items="statuses" label="View by Status" class="flex-grow-1"
+              style="min-width: 200px;"></v-select>
+              <v-checkbox v-model="filters.isRemote" label="Is remote" class="pr-4"></v-checkbox>
+              <v-btn outlined class="mx-2 my-2" text
+              @click="resetFilters">Clear Filters</v-btn>
+                    </div>
+                  </v-slide-x-reverse-transition>
+                  <v-btn
+                class="ma-2"
+                color="green"
+                icon="mdi-filter-menu-outline"
+                @click="showFilters = !showFilters"
+              ></v-btn>
+
+
+
+
+
+
+               <!-- <div>
+                  <v-btn icon @click="showFilters = !showFilters">
+                    <v-icon>mdi-filter</v-icon>
+                  </v-btn>
+
+                  <v-slide-x-transition>
+                    <div v-if="showFilters">
+                      <v-select
+                        :items="['Option 1', 'Option 2', 'Option 3']"
+                        label="Dropdown"
+                      ></v-select>
+
+                      <v-checkbox label="Checkbox"></v-checkbox>
+                    </div>
+                  </v-slide-x-transition>
+                </div> -->
+
+
+
         </v-col>
       </v-row>
-      <div style="background-color:#011918;">
+      <div>
         <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
       </div>
       <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow"
@@ -89,7 +160,7 @@
                 <v-text-field v-model="job.jobLocation" label="Job Location"></v-text-field>
                 <v-text-field v-model="job.postedAt" label="Posted At"></v-text-field>
                 <v-text-field v-model="job.appliesClosedAt" label="Applies Closed At"></v-text-field>
-                <v-text-field v-model="job.timestamp" label="Date Scraped"></v-text-field>
+                <v-text-field v-model="job.timestamp" label="Date Added"></v-text-field>
                 <v-text-field v-model="job.jobDescription" label="Job Description"></v-text-field>
                 <v-text-field v-model="job.matchingKeywords" label="Matching Keywords"></v-text-field>
                 <v-text-field v-model="job.workplaceType" label="Workplace Type"></v-text-field>
@@ -126,22 +197,22 @@
 </template>
 
 <style scoped>
-.app-background {
+/* .app-background {
   background: url('https: //www.ryangriego.com/images/home-background-ryan-griego.jpeg') !important;
+} */
+.overlay {
+  position: unset;
+  /* top: 0;
+  right: 140; */
+  z-index: 1;
 }
 </style>
 
 <script>
 import Table from '../components/Table.vue';
 // Dark mode
-import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
-// import 'tabulator-tables/dist/css/tabulator.min.css';
-
-nextTick(() => {
-  if (process.client) {
-    useNuxtApp().$toast('notify after nextTick');
-  }
-});
+// import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
+import 'tabulator-tables/dist/css/tabulator.min.css';
 
 export default {
   data: () => ({
@@ -153,7 +224,14 @@ export default {
     isEmailDialogOpen: false,
     isAddJobDialogOpen: false,
     dialog: '',
+    showFilters: false,
     rowData: {},
+    sheet: false,
+      tiles: [
+        { img: 'keep.png', title: 'Run Scraper' },
+        { img: 'inbox.png', title: 'Fetch Jobs' },
+        { img: 'hangouts.png', title: 'Add Job' },
+      ],
     mySkills: ['React', 'Vue', 'PHP'],
     jobs: [],
     valid: true,
@@ -220,52 +298,41 @@ export default {
       handler() {
         this.updateTable();
       },
-      immediate: true,
+      immediate: false,
     },
     'filters.status': {
       handler() {
         this.updateTable();
       },
-      immediate: true,
+      immediate: false,
     },
   },
   methods: {
     initialize() {
     },
+
+    takeAction(action){
+      if(action === 'Run Scraper') {
+        this.runJobScraper();
+      } else if(action === 'Fetch Jobs') {
+        this.fetchNewJobs();
+      } else if(action === 'Add Job') {
+        this.openAddJobModal();
+      }
+      console.log('take action - log the action', action);
+    },
     async submitForm() {
 
-      // this.job.jobPosterEmail = "test@delphiretech.com";
-      // this.status = "";
-      // this.companyUrl = "https://www.linkedin.com/company/delphire";
-      // this.companyName = "Delphire Inc";
-      // this.jobTitle = "Software Engineer";
-      // this.jobLocation = "Los Angeles; CA";
-      // this.postedAt = "2023-10-29T22:59:23.000Z";
-      // this.appliesClosedAt = "2024-04-26T22:59:06.000Z";
-      // this.jobDescription = "Software Engineer with some Embedded Systems Experience Search\n Required Qualifications\n 2 years of experience working on a combination of hardware and software. i.e. an IOT system that is field deployed or car industry related.Please tailor your resume to the following Required Qualifications and include a second page highlighting the projects that you worked to fulfill those qualifications and your role / contribution to those projects.Proven system testing and validation ability.Experience Working experience with FPGAs; Microcontrollers.We are looking for someone who takes initiative to find new and improved ways to get things done; is action oriented and achieves results.Ability to solve end-to-end problems and Translate user requirements to design requirements. Preferred Qualifications:Advanced degree (e.g. Master's; PhD; etc) in an engineering-related field.A passion for tackling the wildfire challenge.Experience in field-deployed systems (i.e. weather stations; IOT devices) that operate off-grid.Experience working at a startup or on a small; fast-moving team.Ability to foresee issues and design in flexibility and workarounds for both known and unknown unknowns.Good skills and interest in mentorship BenefitsCompetitive Salary.Fully covered health Benefits and PTO; subject to change.Flexible Work Schedules!Accelerated Career Growth!Startup Equity Stake Job DescriptionOur Company is looking for an IoT Embedded Hardware Engineer to work as a member of our growing team. You will be responsible for hardware development on our early wildfire detection system. You will work directly with our software team to innovate with and improve our current software systems and platform. The goal is to transition our prototype to a Minimum Commercial Unit so you will gain hands on experience in that process. This position will require a fair amount of hands-on work and testing of our platform. The main work will be out of our office at the LKIC Campus in downtown LA and other field locations as necessary. You will have access to a state-of-the-art prototyping facility and machine shop. We have some great partners and advisors that can provide support to this position. This position requires a self-motivated; dynamic individual with strong technical and communication skills. We are looking for someone who takes initiative to find new and improved ways to get things done; is action oriented and achieves results. You will also be a key contributor to product definition and resulting detailed device performance and functional requirements specifications.\n About DelphireDelphire’s mission is to reduce the occurrence and impact of wildfires caused by downed or damaged power lines of the electric grid by supplying our utility customers with an early detection and warning system that can report fires; provide photographs for human confirmation and assessment prior to resource deployment all in their earliest stages even from low connectivity environments. We differentiate from other wildfire AI detection technologies by working below the canopy line; along the grid assets; to detect fires and faults during the incipient phase; thus helping to stop fires before they reach their critical self‐sustaining stage; and simultaneously provide information on their root cause enhancing future prevention. Both aspects are improvements to the state‐of‐the‐art capabilities for our utility customers that Delphire is working with through a unique combination of hardware and software advances. Learn more about us at www.delphiretech.com\n References required.";
-      // this.jobId  =3745290039;
-      // this.workplaceType = "On-site";
-      // this.companyLogoUrl = "https://www.linkedin.com/in/gilberto-desalvo-74b498a6";
-      // this.applyUrl = "John Smith";
-      // this.experienceLevel = "https://media.licdn.com/dms/image/C560BAQGxvjHURpAHnA/company-logo_400_400/0/1675743016492/delphire_logo?e=1714003200&v=beta&t=CN4I50rXA5FNCkuljbbwmD_li4JIV3-QzzjQDEd2yaY";
-      // this.applicantsCount = "https://www.linkedin.com/job-apply/3745290039";
-      // this.viewsCount = "1150";
-      // this.companyStaffCount = "4253";
-      // this.companyDescription = "4";
-      // this.jobIndustries = "Global warming increases grid-sparked wildfires to account for 30% of California’s annual burn area; releasing CO2 equivalent to 65% of the state’s transportation-related emissions. Better identification of required maintenance; especially in remote areas; could prevent most of these devastating fires. Delphire’s powerline monitoring system solves this problem by enabling automated; frequent; and cheap inspection of lines. Plus; our system identifies fires that do break out and transmits alerts within seconds - minimizing damages; power disruptions; and CO2 impact.";
-      // this.jobFunctions = "";
-      // this.remoteAllowed = "";
-      // this.jobState = "FALSE";
-      // this.jobType = "LISTED";
-      // this.timestamp = "Full-time";
-      // this.query = "2024-01-22T18:23:52.311Z";
-      // this.jobPosterProfileUrl = "https://www.linkedin.com/jobs/view/3745290039/?eBP=CwEAAAGNMi1gsTOrD_rMJ8jE2uu_yYt5anfIUDqac7C9VVHBsoE9aSeuaFXPErTOT0xvjYXKQOOs12jVRnLQiL3cKbCqo3OGdEvd1bUtFYvQRS2pzegkgPWTz2eiY8tIXLYZZt1WWu6xoA7ytQaG7PLZ3Orjy8Bfc-Rm2tD55qZ_9yh-ngWWXfy_wFfkxfnACFo913WrW8h8VhCq09Ga-Rbq9ZN_l1uspZR6kNRxVJrYg2RFylvt5SC-u0BXCk5h5yc1YYJNh-r6BIkONx88Yh5TTuoIlsKpvvX7um5nsUDODJkN-weCwLk5ltVYO0KH_B_dyRLif25VIwGN_RY9K91fwHujhn1wEnq48K8mY_KIiQ7sxJ-H6mPQEp-e1XtNiBKlEsqBocWckHj9tjDQvHgfOduRkz0&refId=4%2FSq1VUQB0mN3NMC3yANFA%3D%3D&trackingId=g2nGQXmEPq1f4c727RD4Hg%3D%3D&trk=flagship3_search_srp_jobs#/";
-      // this.jobPosterName = "";
-
+      const currentDate = new Date();
+      const isoString = currentDate.toISOString();
+      this.timestamp = currentDate.toISOString();
       let job = this.job;
+      job.timestamp = currentDate.toISOString();
+      let generateId = Number(Math.floor(Math.random() * 9000000000) + 1000000000);
+      job.jobId  = generateId;
       const isValid = this.$refs.form.validate();
 
-      if (isValid) {
+      if (isValid && this.job.jobTitle && this.job.companyName) {
         const { data: jobs } = await useFetch("/api/addjobs", {
           method: "POST",
           body: {
@@ -273,10 +340,10 @@ export default {
             type: 'single',
           },
         });
-        // this.isAddJobDialogOpen = false;
       }
     },
     updateTable() {
+      console.log("got into updateDTable");
       setTimeout(() => {
         this.$refs.main_table.updateTableData();
       }, 100);
@@ -381,6 +448,8 @@ export default {
         let lastUrl = urls[urls.length -1];
         const getJobsJson = await fetch(lastUrl);
         let jobsData = await getJobsJson.json();
+        console.log("log the jobsData", jobsData);
+        // return;
         // DOUBLE CHECK THAT IF JOB POSTER INFORMATION IS COMING THROUGH THAT DUBPLICATE HEADERS ARE NOT CREATED
         jobsData = jobsData.map(job => {
           if (!job.companyOfficialUrl || job.companyOfficialUrl === '') {
@@ -450,6 +519,8 @@ export default {
           if(error.value === 'error') {
             this.notify('fail-fetch-new-jobs');
             //return an error message
+          } else {
+            this.updateTable();
           }
       }
     },
@@ -459,11 +530,16 @@ export default {
       item = toRaw(item);
         try {
           const response = await fetch(`/api/getemail?domain=${item.companyOfficialUrl}&full_name=${item.jobPosterName}`);
-        if (!response.ok) {
+          console.log('log the response', response);
+          let data = await response.json();
+          console.log("log the data", data);
+          console.log("log the data", data.data.email);
+
+
+        if (!response.ok || !data.data.email) {
             this.notify('fail-get-email');
           throw new Error('HTTP error ' + response.status);
         }
-        let data = await response.json();
         if(data.data.email) {
           //Update the data in the MongoDB with the correct email
           const { status, error } = await useFetch("/api/updatejobposteremail", {
@@ -473,10 +549,12 @@ export default {
              'email': data.data.email,
             }
             });
+
             if(error.value === 'error') {
               this.notify('fail-get-email');
             } else {
               this.notify('success-get-email');
+
             }
           const vueInstance = this;
           // Need to refresh the tabulator show the data
@@ -509,8 +587,8 @@ export default {
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
-      let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
-     // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+     // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
+      let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let msg = '';
 
       if(this.dialog === 'just-applied') {
@@ -527,7 +605,7 @@ export default {
           ],
           "from": {
             email: "ryan@ryangriego.com",
-            name: "Ryan Griego / Software Engineer"
+            name: `Ryan Griego / ${jobTitle}`
           },
           "subject": `👋 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`,
           "content": [
@@ -1624,7 +1702,7 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 14px; font-weight: 700;">
-                                <span><span>Full Stack Engineer</span></span></h1>
+                                <span><span>Associate Front-End Engineer</span></span></h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>

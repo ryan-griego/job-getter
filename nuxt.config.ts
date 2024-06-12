@@ -4,8 +4,22 @@ import { resolve } from "path";
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: [
-    '@invictus.codes/nuxt-vuetify'
+    '@invictus.codes/nuxt-vuetify',
+    '@kgierke/nuxt-basic-auth'
   ],
+  basicAuth: {
+    enabled: true,
+    users: [
+      {
+        username: "admin",
+        password: "Fj29J(^#jjskKJVsjwjal)",
+      },
+    ],
+    // Optional: Delimiter for users string
+    // usersDelimiter: ",",
+    // Optional: Whitelist routes
+    // allowedRoutes: ["/api/.*"],
+  },
   postcss: {
     plugins: {
       tailwindcss: {},

@@ -155,7 +155,6 @@
                 <v-text-field v-model="job.status" label="Status"></v-text-field>
                 <v-text-field v-model="job.companyName" label="Company Name*"
                   :rules="[v => !!v || 'Company name is required']"></v-text-field>
-                <v-text-field v-model="job.companyUrl" label="Company URL"></v-text-field>
                 <v-text-field v-model="job.companyOfficialUrl" label="Company Official Url"></v-text-field>
                 <v-text-field v-model="job.jobLocation" label="Job Location"></v-text-field>
                 <v-text-field v-model="job.postedAt" label="Posted At"></v-text-field>
@@ -554,6 +553,10 @@ export default {
               this.notify('fail-get-email');
             } else {
               this.notify('success-get-email');
+                setTimeout(() => {
+                  this.updateTable();
+                }, 4000);
+
 
             }
           const vueInstance = this;
@@ -587,7 +590,7 @@ export default {
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
-     // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
+    //  let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
       let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let msg = '';
 
@@ -607,11 +610,11 @@ export default {
             email: "ryan@ryangriego.com",
             name: `Ryan Griego / ${jobTitle}`
           },
-          "subject": `👋 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`,
+          "subject": `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`,
           "content": [
             {
               type: "text/plain",
-              value: `👋 Recently applied for ${jobTitle} at ${companyName} - thanks for accepting my application`
+              value: `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`
             },
             {
               type: "text/html",
@@ -1034,6 +1037,9 @@ export default {
 
 <body class="clean-body u_body"
   style="margin: 0;padding: 0;-webkit-text-size-adjust: 100%;background-color: #e4e0e8;color: #000000">
+  <img src="https://www.google-analytics.com/collect?v=1&t=event&tid=UA-47059061-1
+&cid=test@gmail.com&ec=email&ea=open&el=EmailOpen&cs=sendgrid&cm=email&cn=recently_applied” width=" 1" height="1"
+    style="display:none;" alt="" />
   <!--[if IE]><div class="ie-container"><![endif]-->
   <!--[if mso]><div class="mso-container"><![endif]-->
   <table id="u_body"
@@ -1043,9 +1049,6 @@ export default {
       <tr style="vertical-align: top">
         <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
           <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="background-color: #e4e0e8;"><![endif]-->
-
-
-
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
               style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
@@ -1074,7 +1077,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ebf9f9; line-height: 140%; text-align: center; word-wrap: break-word; font-family: Epilogue, sans-serif; font-size: 34px; font-weight: 400;">
-                                <span><span><span><span><span>Ryan Griego</span></span></span></span></span></h1>
+                                <span><span><span><span><span>Ryan Griego</span></span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -1291,7 +1295,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 13px; font-weight: 700;">
-                                <span><span><span><span><span><span>PHONE</span></span></span></span></span></span></h1>
+                                <span><span><span><span><span><span>PHONE</span></span></span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -1328,7 +1333,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 13px; font-weight: 700;">
-                                <span><span><span><span><span>PORTFOLIO SITE</span></span></span></span></span></h1>
+                                <span><span><span><span><span>PORTFOLIO SITE</span></span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -1426,10 +1432,6 @@ export default {
               </div>
             </div>
           </div>
-
-
-
-
 
           <div class="u-row-container" style="padding: 0px;background-color: transparent">
             <div class="u-row"
@@ -1606,7 +1608,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #1a9ba2; line-height: 80%; text-align: left; word-wrap: break-word; font-family: impact,chicago; font-size: 120px; font-weight: 400;">
-                                <span><span><span><span><span>02</span></span></span></span></span></h1>
+                                <span><span><span><span><span>02</span></span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -1628,7 +1631,6 @@ export default {
                     <div
                       style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
                       <!--<![endif]-->
-
                       <table id="u_content_heading_11" style="font-family:'Lato',sans-serif;" role="presentation"
                         cellpadding="0" cellspacing="0" width="100%" border="0">
                         <tbody>
@@ -1640,9 +1642,9 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 14px; font-weight: 700;">
-                                <span>LifeMD</span></h1>
+                                <span>LifeMD</span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
-
                             </td>
                           </tr>
                         </tbody>
@@ -1702,7 +1704,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 14px; font-weight: 700;">
-                                <span><span>Associate Front-End Engineer</span></span></h1>
+                                <span><span>Front-End Engineer</span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -1720,7 +1723,7 @@ export default {
 
                               <div class="v-text-align"
                                 style="font-size: 12px; color: #5ac1a9; line-height: 0%; text-align: left; word-wrap: break-word;">
-                                <p style="line-height: 0%;">From 2021 - 2023</p>
+                                <p style="line-height: 0%;">2021 - 2023</p>
                               </div>
 
                             </td>
@@ -1774,7 +1777,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 14px; font-weight: 700;">
-                                <span>Eagle Industrial Group</span></h1>
+                                <span>Eagle Industrial Group</span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -1836,7 +1840,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 14px; font-weight: 700;">
-                                <span>Front-End Web Developer</span></h1>
+                                <span>Front-End Web Developer</span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -1854,7 +1859,7 @@ export default {
 
                               <div class="v-text-align"
                                 style="font-size: 12px; color: #5ac1a9; line-height: 0%; text-align: left; word-wrap: break-word;">
-                                <p style="line-height: 0%;">From 2018- 2020</p>
+                                <p style="line-height: 0%;">2018- 2020</p>
                               </div>
 
                             </td>
@@ -2010,7 +2015,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 14px; font-weight: 700;">
-                                <span>Job Getter</span></h1>
+                                <span>Job Getter</span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -2090,7 +2096,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word; font-size: 14px; font-weight: 700;">
-                                <span>Chat RRG</span></h1>
+                                <span>Chat RRG</span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -2169,7 +2176,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #1a9ba2; line-height: 80%; text-align: right; word-wrap: break-word; font-family: impact,chicago; font-size: 120px; font-weight: 400;">
-                                <span><span><span><span><span>03</span></span></span></span></span></h1>
+                                <span><span><span><span><span>03</span></span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -2451,7 +2459,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #090808; line-height: 140%; text-align: center; word-wrap: break-word; font-size: 15px; font-weight: 400;">
-                                <span><span><span><span>Vue</span></span></span></span></h1>
+                                <span><span><span><span>Vue</span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -2585,7 +2594,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #302d2e; line-height: 140%; text-align: center; word-wrap: break-word; font-size: 15px; font-weight: 400;">
-                                <span><span><span><span>React</span></span></span></span></h1>
+                                <span><span><span><span>React</span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -2646,7 +2656,8 @@ export default {
                               <!--[if mso]><table width="100%"><tr><td><![endif]-->
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #141313; line-height: 140%; text-align: center; word-wrap: break-word; font-size: 15px; font-weight: 400;">
-                                <span><span>PHP</span></span></h1>
+                                <span><span>PHP</span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -2692,7 +2703,8 @@ export default {
                               <h1 class="v-text-align"
                                 style="margin: 0px; color: #0f3159; line-height: 140%; text-align: center; word-wrap: break-word; font-family: Epilogue, sans-serif; font-size: 34px; font-weight: 400;">
                                 <span><span><span><span><span><span><span>Ryan
-                                              Griego</span></span></span></span></span></span></span></h1>
+                                              Griego</span></span></span></span></span></span></span>
+                              </h1>
                               <!--[if mso]></td></tr></table><![endif]-->
 
                             </td>
@@ -2815,8 +2827,6 @@ export default {
                                     </tbody>
                                   </table>
                                   <!--[if (mso)|(IE)]></td><![endif]-->
-
-
                                   <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
                                 </div>
                               </div>
@@ -2868,7 +2878,9 @@ export default {
   <!--[if mso]></div><![endif]-->
   <!--[if IE]></div><![endif]-->
 </body>
+
 </html>
+
   `
             }
           ]

@@ -18,7 +18,7 @@
       <v-row class="outside-table d-flex align-end">
         <v-col cols="2" class="d-flex align-center no-pad">
           <img alt="Job Getter logo" height="auto"
-            src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1710832996/new-6_zuoc2x.jpg"
+            src="https://res.cloudinary.com/dm7y3yvjp/image/upload/v1721611296/logo-in-use-transformed_qqmga8.png"
             style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;"
             width="300">
         </v-col>
@@ -129,8 +129,7 @@
             <v-divider class="mt-3"></v-divider>
             <v-card-text class="px-4" style="height: 100px;">
               <v-radio-group v-model="dialog" column dark>
-                <v-radio label="Just Applied" value="just-applied"></v-radio>
-                <v-radio label="Thank you" value="thankyou"></v-radio>
+                <v-radio label="Recently Applied" value="just-applied"></v-radio>
               </v-radio-group>
             </v-card-text>
             <v-divider></v-divider>
@@ -590,7 +589,7 @@ export default {
       let jobLocation = item.jobLocation;
       let postedAt = item.postedAt;
       let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
-    //  let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
+   //  let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
       let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let msg = '';
 
@@ -1389,11 +1388,12 @@ export default {
                                 <tr>
                                   <td class="v-text-align" style="padding-right: 0px;padding-left: 0px;" align="left">
 
-                                    <img align="left" border="0"
+                                  <img align="left" border="0"
                                       src="${companyLogoUrl}"
                                       alt="image" title="image"
                                       style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 270px;"
                                       width="270" class="v-src-width v-src-max-width" />
+
 
                                   </td>
                                 </tr>
@@ -1414,8 +1414,7 @@ export default {
 
                               <div class="v-text-align"
                                 style="font-size: 16px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word;">
-                                <p style="line-height: 140%;"><span style="color: #ecf0f1; line-height: 22.4px;">I'd
-                                    love to work at ${companyName}!</span></p>
+                                <p style="line-height: 140%;"><span style="color: #ecf0f1; line-height: 22.4px;">I'd love to work at ${companyName}!</span></p>
                               </div>
 
                             </td>

@@ -141,7 +141,7 @@ export default {
       { title: "Company Staff Count", field: "companyStaffCount", sorter: "number", minWidth: 200, visible: false },
       { title: "Company Description", field: "companyDescription", sorter: "string", minWidth: 200, visible: false },
       { title: "Job Industries", field: "jobIndustries", sorter: "string", minWidth: 200, visible: false  },
-      { title: "Source", field: "source", sorter: "string", minWidth: 100, visible: true },
+      { title: "Source", field: "source", sorter: "string", minWidth: 100, visible: false },
       { title: "Job Functions", field: "jobFunctions", sorter: "string", minWidth: 200, visible: false },
       { title: "Remote Allowed", field: "remoteAllowed", sorter: "boolean", minWidth: 40, visible: false },
       { title: "Job Type", field: "jobType", sorter: "string", minWidth: 80, visible: false },

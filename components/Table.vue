@@ -1,6 +1,8 @@
 <script>
 import { TabulatorFull as Tabulator } from 'tabulator-tables';
-import { useGlobalState } from '~/composables/state'
+import { useGlobalState } from '~/composables/state';
+import { generateQRCodeAndUpload } from '~/utils/QRCodeGenerator';
+
 
 export default {
   emits: ['sendEmail', 'getEmail', 'updateRow', 'deleteRow'],
@@ -30,6 +32,33 @@ export default {
     updateTableData() {
       this.tabulator.setData(this.jobs);
     },
+
+      async generateQRCode(url, jobId, name, companyName, jobTitle) {
+         await generateQRCodeAndUpload(url, jobId, name, companyName, jobTitle);
+    },
+    batchSendEmails() {
+      // Get selected data
+      const selectedData = this.tabulator.getSelectedData();
+      const rawData = selectedData.map(row => toRaw(row));
+
+      // Filter rows based on required fields
+      const filteredRows = rawData.filter(row =>
+        row.jobPosterName && row.jobPosterEmail && row.companyName && row.jobTitle// && row.status === 'Applied'
+      );
+      // Log the filtered rows
+      console.log(filteredRows);
+      const vueInstance = this;
+
+      filteredRows.forEach(row => {
+        console.log("got into foreach in table");
+        console.log("log the row in foreach", row);
+        /// vueInstance.$emit('open-email-modal', row);
+
+        this.$emit('sendEmail', { type: 'just-applied', payload: row });
+
+      });
+      // vueInstance.$emit('open-email-modal', cell.getRow().getData());
+    },
   },
 
   mounted() {
@@ -37,8 +66,8 @@ export default {
     const vueInstance = this;
     const globalState = useGlobalState();
     this.tabulator = new Tabulator(this.$refs.table, {
-     // pagination: "local",
-     // paginationSize: 13,
+     pagination: "local",
+     paginationSize: 50,
       rowContextMenu: [
     {
         label:"Delete row",
@@ -56,32 +85,80 @@ export default {
             let jobId = rowData.jobId;
             let jobPosterName = rowData.jobPosterName;
             let jobPosterEmail = rowData.jobPosterEmail;
+            let qrCodeUrl = rowData.qrCodeUrl;
 
-            let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail};
+            let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail, qrCodeUrl};
             // Update the Mongo DB document using the jobId with the value of the company domain
             vueInstance.$emit('update-row', rowInfo);
         }
     },
+    {
+        label: 'Generate QR Code',
+        action: async (e, row) => {
+          const rowData = row.getData();
+          const jobId = rowData.jobId;
+          const url = rowData.companyOfficialUrl;
+          const name = rowData.jobPosterName.split(' ')[0];
+          const companyName = rowData.companyName;
+          const jobTitle = rowData.jobTitle;
+
+          if (url && jobId && name && companyName && jobTitle) {
+            await this.generateQRCode(url, jobId, name, companyName, jobTitle);
+          }
+        }
+      },
     ],
       data: this.jobs,
       reactiveData: true,
       layout: "fitColumns",
-      // This columns array can be generated dynamically in a computed property
       columns: [
+          {formatter:"rowSelection",
+          titleFormatter:"rowSelection", titleFormatterParams:{
+            rowRange:"active" //only toggle the values of the active filtered rows
+          },
+          hozAlign:"center",
+          headerSort:false
+          },
          { title: "", field: "logo",maxWidth:40, formatter: function (cell, formatterParams, onRendered) {
           let rowData = cell.getRow().getData();
           let url = rowData.companyLogoUrl ?  rowData.companyLogoUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
-          return `<img src="${url}" style="height:40px;width:40px;">`;
+                const backupImageUrl = "https://www.ryangriego.com/assets/icons/vue.svg";
+          return `
+            <img
+              src="${url}"
+              style="height:40px;width:40px;"
+              onerror="this.onerror=null;this.src='${backupImageUrl}';"
+              alt="Company Logo"
+            >
+          `;
          }
 
         },
       { title: "Job ID", field: "jobId", sorter: "number", minWidth: 100, visible:false },
       { title: "Job Title", field: "jobTitle", sorter: "string", minWidth: 160},
       { title: "Status", field: "status", sorter: "string", minWidth: 100 },
-      { title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
+     { title: "QR Code Url", field: "qrCodeUrl", sorter: "string", minWidth: 100, editor:'input' },
+
+{ title: "QR Code", field: "qrCodeUrl", sorter: "string", minWidth: 100,formatter: function (cell, formatterParams, onRendered) {
+                        let rowData = cell.getRow().getData();
+                        let url = rowData.qrCodeUrl ?  rowData.qrCodeUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
+                              const backupImageUrl = "https://www.ryangriego.com/assets/icons/vue.svg"; // Replace with your actual backup image URL
+                        return `
+                          <img
+                            src="${url}"
+                            style="height:40px;width:40px;"
+                            onerror="this.onerror=null;this.src='${backupImageUrl}';"
+                            alt="Company Logo"
+                          >
+                        `; },
+      },
+
+
+
+{ title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
       { title: "Company URL", field: "companyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, editor:'input'},
-      { title: "Job Location", field: "jobLocation", sorter: "string", minWidth: 120, visible: false },
+      { title: "Job Location", field: "jobLoscation", sorter: "string", minWidth: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Added", field: "timestamp", sorter: "date", minWidth: 100,formatter: (cell) => {
@@ -111,8 +188,6 @@ export default {
               let keywordMatchCount = Object.keys(keywordCounts).length;
               let keywordCountsArray = Object.entries(keywordCounts);
               let keywordCountsString = keywordCountsArray.map(function ([keyword, count], index) {
-
-
                 if (index === keywordCountsArray.length - 1) {
                   return keyword;
                 } else {
@@ -186,18 +261,6 @@ export default {
       ]
 
     });
-
-    // this.tabulator.on("rowDblClick", function (e, row) {
-    //   let rowData = toRaw(row.getData());
-    //   globalState.value.rowData = rowData
-    //      setTimeout(() => {
-    //     // Now `this` refers to the Vue instance, so `this.tabulator` should be defined
-    //     console.log("log this.tabulator", this.tabulator);
-    //     this.tabulator.redraw(true);
-    //     navigateTo("/job")
-    //   }, 2000);
-    // });
-    // /THIS IS NEW THE ONE ABOVE IS ORIGINAL
     this.tabulator.on("rowDblClick", (e, row) => {
       let rowData = toRaw(row.getData());
       globalState.value.rowData = rowData;
@@ -208,5 +271,21 @@ export default {
 }
 </script>
 <template>
+    <!-- <button @click="batchSendEmails" style="
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 5px;
+">
+  Batch send emails
+</button> -->
   <div ref="table"></div>
+
 </template>

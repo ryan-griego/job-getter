@@ -82,3 +82,9 @@ h1, button {
   background-color: rgb(6, 94, 9)!important;
   color:white;
 }
+
+.tabulator .tabulator-col:nth-child(1) .tabulator-col-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

@@ -10,10 +10,11 @@ export default defineEventHandler(async (event) => {
         Accept: "application/json",
         "X-Phantombuster-Key": config.PHANTOMBUSTER_API_KEY
       },
-      body: JSON.stringify({ id: '2134187378716133' })
+      body: JSON.stringify({ id: '6668119365242752' })
     }).catch((error) => {
       console.log("log the error", error);
       return error;
     });
+    console.log("log the scraperequest", scraperRequest);
   return scraperRequest;
 });

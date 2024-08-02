@@ -35,6 +35,9 @@ export default defineNuxtConfig({
     PHANTOMBUSTER_API_KEY: process.env.PHANTOMBUSTER_API_KEY,
     HUNTER_API_KEY: process.env.HUNTER_API_KEY,
     mongodbUri: process.env.MONGODB_URI,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   },
   nitro: {
     plugins: ['~/server/index.ts'],

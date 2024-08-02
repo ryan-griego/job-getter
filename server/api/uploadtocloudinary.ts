@@ -1,10 +1,12 @@
 import { defineEventHandler } from 'h3';
 import { v2 as cloudinary } from 'cloudinary';
+const config = useRuntimeConfig();
+
 
 cloudinary.config({
-  cloud_name: 'dm7y3yvjp',
-  api_key: '278544775966237',
-  api_secret: 'OcaP4U2KlEgvEuh4wIp136kGEG4',
+  cloud_name: config.CLOUDINARY_CLOUD_NAME,
+  api_key: config.CLOUDINARY_API_KEY,
+  api_secret: config.CLOUDINARY_API_SECRET,
 });
 
 export default defineEventHandler(async (event) => {

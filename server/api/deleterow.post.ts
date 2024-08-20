@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
     const db = client.db('test');
 
-    await db.collection('jobs').deleteOne({ jobId: body.jobId });
+    await db.collection('jobs_backup').deleteOne({ jobId: body.jobId });
 
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);

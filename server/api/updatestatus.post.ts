@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
     const db = client.db('test');
 
-    await db.collection('jobs').updateOne({ jobId: body }, { $set: { status: 'Sent' } });
+    await db.collection('jobs_backup').updateOne({ jobId: body }, { $set: { status: 'Sent' } });
 
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);

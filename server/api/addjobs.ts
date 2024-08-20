@@ -5,6 +5,9 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   const uri = config.mongodbUri;
   const client = new MongoClient(uri);
+  const collection = config.MONGODB_COLLECTION;
+
+//  return;
 
   try {
     await client.connect();
@@ -14,10 +17,12 @@ export default defineEventHandler(async (event) => {
     console.log("log the type", body.type)
 
     if(body.type === "multi") {
+      console.log("lo gthe data going in add jobs - MULTI", body.data);
+
       await db.collection('jobs').insertMany(body.data);
     } else {
-      console.log("lo gthe data going in add jobs", body.data);
-      await db.collection('jobs').insertOne(body.data);
+      console.log("lo gthe data going in add jobs - INGLE", body.data);
+      await db.collection(collection).insertOne(body.data[0]);
     }
 
   } catch (error) {

@@ -68,23 +68,78 @@
       <div>
         <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
       </div>
-      <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow"
+      <Table @open-email-modal="openEmailModal" @open-add-contact-modal="openAddContactModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow"
         @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="mb-4" ref="main_table" />
       <v-dialog v-model="isEmailDialogOpen" width="auto" scrollable>
         <template v-slot:default="{ isActive }">
-          <v-card prepend-icon="mdi-email-fast-outline" title="Select Email Type" dark>
+          <v-card prepend-icon="mdi-email-fast-outline" title="Send Email(s)" dark>
             <v-divider class="mt-3"></v-divider>
-            <v-card-text class="px-4" style="height: 100px;">
+            <v-card-text class="px-4" style="height: 400px;">
               <v-radio-group v-model="dialog" column dark>
                 <v-radio label="Recently Applied" value="just-applied"></v-radio>
               </v-radio-group>
+
+
+
+              <v-checkbox
+      v-model="selectAll"
+      label="Send to All"
+      @change="toggleSelectAll"
+    />
+
+    <v-checkbox-group v-model="selectedEmails" @change="handleCheckboxChange">
+      <v-checkbox
+        v-for="email in rowData.jobPosterEmail"
+        :key="email"
+        :label="email"
+        :value="email"
+      />
+    </v-checkbox-group>
+
             </v-card-text>
             <v-divider></v-divider>
             <v-card-actions>
               <v-btn text="Close" @click="isActive.value = false"></v-btn>
               <v-spacer></v-spacer>
               <v-btn color="surface-variant" text="Send" variant="flat"
-                @click="isActive.value = false; sendEmail()"></v-btn>
+                @click="isActive.value = false; sendEmail(selectedEmails)"></v-btn>
+            </v-card-actions>
+          </v-card>
+        </template>
+      </v-dialog>
+      <v-dialog v-model="isAddContactModalOpen" width="auto" scrollable>
+        <template v-slot:default="{ isActive }">
+          <v-card prepend-icon="mdi-email-fast-outline" title="Add Hiring Contact" dark>
+            <v-divider class="mt-3"></v-divider>
+            <v-card-text class="px-4">
+            <v-text-field
+            v-model="hiringContactName"
+            label="Name"
+            required
+            outlined
+            dense
+          ></v-text-field>
+          <v-text-field
+            v-model="hiringContactEmail"
+            label="Email"
+            required
+            outlined
+            dense
+          ></v-text-field>
+          <v-text-field
+            v-model="hiringContactLinkedInUrl"
+            label="LinkedIn"
+            required
+            outlined
+            dense
+          ></v-text-field>
+            </v-card-text>
+            <v-divider></v-divider>
+            <v-card-actions>
+              <v-btn text="Close" @click="isActive.value = false"></v-btn>
+              <v-spacer></v-spacer>
+              <v-btn color="surface-variant" text="Send" variant="flat"
+                @click="isActive.value = false; addHiringContact()"></v-btn>
             </v-card-actions>
           </v-card>
         </template>
@@ -172,8 +227,15 @@ export default {
       },
       statuses: ['Sent', 'Applied'],
     isEmailDialogOpen: false,
+    isAddContactModalOpen: false,
+    hiringContactName: '',
+    hiringContactEmail: '',
+    hiringContactLinkedInUrl: '',
+    selectedEmails:[],
     isAddJobDialogOpen: false,
     dialog: '',
+    selectAll: '',
+    toggleSelectAll: '',
     showFilters: false,
     rowData: {},
     sheet: false,
@@ -211,7 +273,6 @@ export default {
   }),
 
   async setup() {
-
 
 
     const { data: jobs } = await useFetch("/api/jobs");
@@ -263,12 +324,24 @@ export default {
     initialize() {
     },
 
+    handleCheckboxChange(event) {
+        const email = event.target.value; // Get the value from the checkbox event
+        const index = this.selectedEmails.indexOf(email); // Check if the email is already selected
+
+        if (index > -1) {
+            // If the email is found in the array, remove it
+            this.selectedEmails.splice(index, 1);
+        } else {
+            // If the email is not found, add it
+            this.selectedEmails.push(email);
+        }
+
+        console.log("Selected Emails:", this.selectedEmails);
+    },
+
     takeAction(action){
       if(action === 'Run Scraper') {
         this.runJobScraper();
-        setTimeout(() => {
-        this.runJobScraper();
-      }, 1000); // Run the scraper twice
       } else if(action === 'Fetch Jobs') {
         this.fetchNewJobs();
       } else if(action === 'Add Job') {
@@ -363,9 +436,10 @@ export default {
         method: "POST",
          body: {
              'jobId': item.jobId,
-             'domain': item.companyOfficialUrl,
+             'companyOfficialUrl': item.companyOfficialUrl,
              'jobPosterName': item.jobPosterName,
              'jobPosterEmail': item.jobPosterEmail,
+             'status': item.status,
             }
       });
       if(error.value === 'error') {
@@ -404,70 +478,75 @@ export default {
         const getJobsJson = await fetch(lastUrl);
         let jobsData = await getJobsJson.json();
         console.log("log the jobsData", jobsData);
-        // return;
-        // DOUBLE CHECK THAT IF JOB POSTER INFORMATION IS COMING THROUGH THAT DUBPLICATE HEADERS ARE NOT CREATED
         jobsData = jobsData.map(job => {
-          if (!job.companyOfficialUrl || job.companyOfficialUrl === '') {
-            let companyName = job.companyName
-              .replace(/\s/g, '')
-              .replace(/[^\w\s]/gi, '')
-              .replace(/llc/gi, '')
-              .replace(/inc/gi, '');
+  try {
+    console.log("log the jobsData", jobsData);
+    if ((!job.companyOfficialUrl || job.companyOfficialUrl === '') && job.companyName && job.companyDescription) {
+      let companyName = job.companyName
+        .replace(/\s/g, '')
+        .replace(/[^\w\s]/gi, '')
+        .replace(/llc/gi, '')
+        .replace(/inc/gi, '');
+      let companyUrl = `${companyName}.com`;
+      job.companyOfficialUrl = companyUrl.toLowerCase();
+    }
 
-            let companyUrl = `${companyName}.com`;
-            job.companyOfficialUrl = companyUrl.toLowerCase();
-          }
+    // Change jobPosterName from string to array
+    if(job.jobPosterName) {
+        job.jobPosterName = [`${job.jobPosterName}`];
+    } else {
+        job.jobPosterName = [];
+    }
 
-          // Check through the jobDescription and find number of matching keywords
-          // This has to be taken out an accessible throughou the app and apply in real time to the data coming into the tabulator
+    let keywords = [
+      "PHP", "Nuxt.js", "Next.js", "JavaScript", "TypeScript", "React", "Vue",
+      "HTML", "CSS", "Node.js", "Express.js", "MongoDB", "SQL", "Git",
+      "Webpack", "Babel", "GSAP", "MySQL", "Tailwind CSS",
+    ];
 
-          let keywords = [
-            "PHP",
-            "Nuxt.js",
-            "Next.js",
-            "JavaScript",
-            "TypeScript",
-            "React",
-            "Vue",
-            "HTML",
-            "CSS",
-            "Node.js",
-            "Express.js",
-            "MongoDB",
-            "SQL",
-            "Git",
-            "Webpack",
-            "Babel",
-            "GSAP",
-            "MySQL",
-            "Tailwind CSS",
-          ];
+    let jobDescription = job.jobDescription || ''; // Handle cases where jobDescription might be undefined
 
-          let jobDescription = job.jobDescription;
+    let keywordCounts = keywords.reduce((counts, keyword) => {
+      let regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      let matches = jobDescription.match(regex);
+      if (matches) {
+        counts[keyword] = matches.length;
+      }
+      return counts;
+    }, {});
 
-          let keywordCounts = keywords.reduce((counts, keyword) => {
-            let regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-            let matches = jobDescription.match(regex);
-            if (matches) {
-              counts[keyword] = matches.length;
-            }
-            return counts;
-          }, {});
+    return {
+      ...job,
+      companyOfficialUrl: job.companyOfficialUrl,
+      status: 'Applied',
+      jobPosterEmail: [],
+      source: 'LinkedIn'
+    };
 
-          return {
-            ...job,
-            companyOfficialUrl: job.companyOfficialUrl,
-            status: 'Applied',
-            jobPosterEmail: '',
-            source: 'LinkedIn'
-          };
-        });
+  } catch (error) {
+    console.error("Error processing job:", job, error);
+    return null; // Skip this job and return null
+  }
+}).filter(job => job !== null); // Remove null entries from the resulting array
+
+        console.log("log the jobsData that was scraped", jobsData);
+        let quantityType = '';
+        console.log("log the length of the jobsData", jobsData.length);
+        if(jobsData.length > 1) {
+           quantityType = 'multi';
+        } else {
+          quantityType = 'single';
+        }
+
+
+        console.log("log the jobsData before going to add jobs", jobsData);
+        console.log("AND THE quantityType", quantityType);
 
           const { data: jobs } = await useFetch("/api/addjobs", {
             method: "POST",
             body: {
               data: jobsData,
-              type: 'multi',
+              type: quantityType,
             },
           });
 
@@ -529,7 +608,14 @@ export default {
 
     openEmailModal(rowData) {
       this.rowData = toRaw(rowData);
+      console.log("log the row data in openEmailModal", this.rowData);
       this.isEmailDialogOpen = true;
+    },
+
+    openAddContactModal(rowData) {
+      console.log("got into openAddContactModal");
+      this.rowData = toRaw(rowData);
+      this.isAddContactModalOpen = true;
     },
 
     openAddJobModal() {
@@ -548,18 +634,66 @@ export default {
       }
     },
 
+    async addHiringContact() {
+        // need to pass in the JobId and this.hiringContactName
+        let jobId = this.rowData.jobId;
+        let jobPosterName = this.hiringContactName;
+        let jobPosterEmail = this.hiringContactEmail;
+        let jobPosterProfileUrl = this.jobPosterProfileUrl ? this.jobPosterProfileUrl: '';
+
+        console.log('got into addHiringContact and log jobPosterName', jobPosterName);
+
+        console.log('log jobId', jobId);
+
+            let data = {jobId, jobPosterName, jobPosterEmail, jobPosterProfileUrl};
+
+            //const { status, error } = await useFetch("/api/updaterow", {
+            const { status, error } = await useFetch("/api/addcontact", {
+              method: "POST",
+              body: data
+            });
+            if(error.value === 'error') {
+          } else {
+            this.updateTable();
+          }
+
+
+
+    },
+
+
+
     async sendEmail(eventData) {
+      console.log("log this.selectedEmails!!!!!! IN SENDEMAIL", this.selectedEmails);
+
+
       const { type, payload } = eventData || {};
+
+      console.log("log the eventData!!!!!!!!!!!!!!!!!!!!! IN SENDEMAIL", eventData);
+
+      console.log("log the rowData!!!!!!!!!!!!!!!!!!!!! IN SENDEMAIL", this.rowData);
+      // this.selectedEmails = ['ryangriego@gmail.com', 'ryangriego@gmail.com'];
+      console.log("log this this.selectedEmails", this.selectedEmails);
+      // return;
 
       // Determine if `eventData` is an object or if it is not provided (direct call)
       let item = this.rowData;
-      if (!item) {
+
+      if (this.rowData) {
         // Handle case where `sendEmail` is called directly (no eventData)
         item = toRaw(this.rowData);
       } else {
         // If eventData is provided, use item from eventData
         item = toRaw(payload);
       }
+
+      console.log("log the item FIRST", item);
+
+
+      if(this.selectedEmails.length === 1 && item.jobPosterName.length === 1) {
+        // Send to only one email
+        console.log("ONLY SENDING TO 1 EMAIL");
+              console.log("log the item", item);
      // let html = ""
       // let companyUrl = item.companyUrl;
       // let companyName = item.companyName.replace(/[^\w\s]/gi, '');
@@ -568,7 +702,248 @@ export default {
       let jobTitle = item.jobTitle;
       // let jobLocation = item.jobLocation;
       // let postedAt = item.postedAt;
-      let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
+      // let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
+          //   let jobPosterName =
+          // Array.isArray(item.jobPosterName) && typeof item.jobPosterName[0] === 'string'
+          // ? item.jobPosterName[0].split(" ")[0]
+          // : 'Hiring Manager';
+
+      // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
+     // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+      let QRCodeUrl = item.qrCodeUrl ? item.qrCodeUrl : 'https://www.ryangriego.com/images/ryan-hero.jpg';
+      // let msg = '';
+
+      console.log("GOT HERE 1");
+
+
+      let templateName = '';
+
+      if (this.dialog === 'just-applied' || type === 'just-applied') {
+        templateName = 'recently-applied.html';
+      }
+
+
+      await this.loadEmailTemplate(templateName);
+
+      // console.log("log the QRCodeUrl", QRCodeUrl);
+      // console.log("log the item.qrCodeUrl", item.qrCodeUrl);
+      console.log("log the item.jobPosterName!!", item.jobPosterName);
+      // return;
+     let html = htmlContent.value;
+
+     // For 1 person
+     console.log("log the item.jobPosterName[0] before split", item.jobPosterName[0]);
+    //  html = html.replace('${jobPosterName}', (item.jobPosterName[0] ? item.jobPosterName[0].split(' ') : 'Hiring Manager'));
+
+      html = html.replace('${jobTitle}', item.jobTitle || '');
+      html = html.replace('${QRCodeUrl}', item.qrCodeUrl || '');
+
+   //  let jobPosterEmail = item.jobPosterEmail || 'ryangriego@gmail.com';
+     //let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+
+      // let jobPosterEmail = 'ryangriego@gmail.com';
+      let jobPosterName = item.jobPosterName[0].split(' ');
+      jobPosterName = jobPosterName[0];
+      // jobPosterName = 'ryangriego@gmail.com';
+      console.log("log the job PosterNAMEEEEEEE", jobPosterName);
+           html = html.replace('${jobPosterName}', (jobPosterName ? jobPosterName : 'Hiring Manager'));
+
+      let jobPosterEmail = item.jobPosterEmail[0];
+      jobPosterEmail = 'ryangriego@gmail.com';
+      // Replace placeholder in the HTML
+            html = html.replace('{{ jobPosterEmail }}', jobPosterEmail);
+        // grace.lee@ringcentral.com
+      // html = html.replace('{{ jobPosterEmail }}', jobPosterEmail);
+      console.log("Final HTML ContentRIGHTIEIFJAOIJEFOIJ", html); // Log the final HTML
+      //      let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
+
+              const msg = {
+                "personalizations": [
+                  {
+                    to: [
+                      {
+                        email: `${jobPosterEmail}`,
+                        name: `${jobPosterName}`
+                      }
+                    ]
+                  }
+                ],
+                "from": {
+                  email: "ryan@ryangriego.com",
+                  name: `Ryan Griego / ${jobTitle}`
+                },
+                "subject": `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`,
+                "content": [
+                  {
+                    type: "text/plain",
+                    value: `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`
+                  },
+                  {
+                    type: "text/html",
+                    value: html
+                  }
+                ],
+              };
+          //  }
+
+
+      const { data, status, error } = await useFetch("/api/sendgrid", {
+        method: "POST",
+        body: msg
+      });
+      if(error.value === 'error') {
+        this.notify('fail-send-email');
+      } else {
+            this.notify('success-send-email');
+            item = {...item, status: 'Sent'};
+            console.log("log the item going into update row in sendEmail", item);
+            const { status, error } = await useFetch("/api/updaterow", {
+              method: "POST",
+              body: item
+            });
+            if(error.value === 'error') {
+          } else {
+            this.updateTable();
+          }
+        }
+      }
+
+    //  this.selectedEmails = ['ryangriego@gmail.com', 'ryangriego@gmail.com'];
+
+//      if(this.selectedEmails.length > 1) {
+//         // SEND TO MULTIPLE EMAILS
+//         console.log("SENDING TO MULTIPLE EMAILS");
+//       let companyName = item.companyName;
+//       let jobTitle = item.jobTitle;
+
+
+//       // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
+//      // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+//       let QRCodeUrl = item.qrCodeUrl ? item.qrCodeUrl : 'https://www.ryangriego.com/images/ryan-hero.jpg';
+
+//       let templateName = '';
+
+//       if (this.dialog === 'just-applied' || type === 'just-applied') {
+//         templateName = 'recently-applied.html';
+//       }
+
+
+//       await this.loadEmailTemplate(templateName);
+
+
+
+
+
+//       console.log("log the item.jobPosterName!!", item.jobPosterName);
+//       //return;
+//      let html = htmlContent.value;
+
+//      // For 1 person
+//      console.log("log the item.jobPosterName[0] before split", item.jobPosterName[0]);
+//      let jobPosterName = item.jobPosterName[0] ? item.jobPosterName[0] : 'ryangriego@gmail.com'
+//      html = html.replace('${jobPosterName}', (item.jobPosterName[0] ? item.jobPosterName[0].split(' ')[0] : 'Hiring Manager'));
+
+//       html = html.replace('${jobTitle}', item.jobTitle || '');
+//       html = html.replace('${QRCodeUrl}', item.qrCodeUrl || '');
+
+//    //  let jobPosterEmail = item.jobPosterEmail || 'ryangriego@gmail.com';
+//      //let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+
+//       // let jobPosterEmail = 'ryangriego@gmail.com';
+//       // let jobPosterName = 'Roger';
+
+
+
+//             // LOOP THROUGH EACH OF THE SELECTED EMAILS AND SEND THEM
+
+//       //return;
+//  //     for(let i = 0; i <= this.selectedEmails.length; i++) {
+//        // let jobPosterEmail = this.selectedEmails[i] ? this.selectedEmails[i] : 'ryangriego@gmail.com';
+//        let jobPosterEmail = 'ryangriego@gmail.com';
+//           console.log("log ge the row DATAAAAAAAAAAAAA", this.rowData);
+
+//             html = html.replace('{{ jobPosterEmail }}', jobPosterEmail[0]);
+
+//               const msg = {
+//                 "personalizations": [
+//                   {
+//                     to: [
+//                       {
+//                         email: `${jobPosterEmail[0]}`,
+//                         //email: `${this.selectedEmails[i]}`,
+//                         name: `${jobPosterName[0]}`
+//                       }
+//                     ]
+//                   }
+//                 ],
+//                 "from": {
+//                   email: "ryan@ryangriego.com",
+//                   name: `Ryan Griego / ${jobTitle}`
+//                 },
+//                 "subject": `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`,
+//                 "content": [
+//                   {
+//                     type: "text/plain",
+//                     value: `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`
+//                   },
+//                   {
+//                     type: "text/html",
+//                     value: html
+//                   }
+//                 ],
+//               };
+//           //  }
+
+
+//       const { data, status, error } = await useFetch("/api/sendgrid", {
+//         method: "POST",
+//         body: msg
+//       });
+//       if(error.value === 'error') {
+//         this.notify('fail-send-email');
+//       } else {
+//             this.notify('success-send-email');
+//             item = {...item, status: 'Sent'};
+//             console.log("log the item going into update row in sendEmail", item);
+//             const { status, error } = await useFetch("/api/updaterow", {
+//               method: "POST",
+//               body: item
+//             });
+//             if(error.value === 'error') {
+//           } else {
+//             this.updateTable();
+//           }
+//         }
+
+//     //  }
+
+//       console.log("got tot he end of the meail loop");
+//           return;
+//       // Replace placeholder in the HTML
+//       html = html.replace('{{ jobPosterEmail }}', jobPosterEmail);
+
+
+//       }
+
+
+        // BELOW WAS COPY/PASTED INTO THE SINGLE EMAIL STATEMENT ABOVE
+
+
+      console.log("log the item", item);
+     // let html = ""
+      // let companyUrl = item.companyUrl;
+      // let companyName = item.companyName.replace(/[^\w\s]/gi, '');
+      let companyName = item.companyName;
+      // let companyLogoUrl = item.companyLogoUrl ? item.companyLogoUrl : 'https://www.ryangriego.com/images/ryan-hero.jpg';
+      let jobTitle = item.jobTitle;
+      // let jobLocation = item.jobLocation;
+      // let postedAt = item.postedAt;
+      // let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
+          //   let jobPosterName =
+          // Array.isArray(item.jobPosterName) && typeof item.jobPosterName[0] === 'string'
+          // ? item.jobPosterName[0].split(" ")[0]
+          // : 'Hiring Manager';
+
       // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
      // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let QRCodeUrl = item.qrCodeUrl ? item.qrCodeUrl : 'https://www.ryangriego.com/images/ryan-hero.jpg';
@@ -585,48 +960,27 @@ export default {
 
       await this.loadEmailTemplate(templateName);
 
-      console.log("log the QRCodeUrl", QRCodeUrl);
-      console.log("log the item.qrCodeUrl", item.qrCodeUrl);
+      // console.log("log the QRCodeUrl", QRCodeUrl);
+      // console.log("log the item.qrCodeUrl", item.qrCodeUrl);
+      console.log("log the item.jobPosterName!!", item.jobPosterName);
+      return;
+     let html = htmlContent.value;
 
-      let html = htmlContent.value;
-      html = html.replace('${jobPosterName}', (item.jobPosterName ? item.jobPosterName.split(' ')[0] : 'Hiring Manager'));
+     // For 1 person
+     console.log("log the item.jobPosterName[0] before split", item.jobPosterName[0]);
+    //  html = html.replace('${jobPosterName}', (item.jobPosterName[0] ? item.jobPosterName[0].split(' ') : 'Hiring Manager'));
+     html = html.replace('${jobPosterName}', (item.jobPosterName[0] ? item.jobPosterName[0].split(' ')[0] : 'Hiring Manager'));
 
       html = html.replace('${jobTitle}', item.jobTitle || '');
       html = html.replace('${QRCodeUrl}', item.qrCodeUrl || '');
 
-     // let jobPosterEmail = item.jobPosterEmail || 'ryangriego@gmail.com';
+   //  let jobPosterEmail = item.jobPosterEmail || 'ryangriego@gmail.com';
      //let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
 
       let jobPosterEmail = 'ryangriego@gmail.com';
       // Replace placeholder in the HTML
       html = html.replace('{{ jobPosterEmail }}', jobPosterEmail);
-      console.log("Final HTML ContentRIGHTIEIFJAOIJEFOIJ", html); // Log the final HTML
-      //      let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
-
-
-      // const msg = {
-      //   personalizations: [
-      //     {
-      //       to: [
-      //         {
-      //           email: "ryangriego@gmail.com",
-      //           name: "test"
-      //         }
-      //       ]
-      //     }
-      //   ],
-      //   from: {
-      //     email: "ryan@ryangriego.com",
-      //     name: "Ryan Griego"
-      //   },
-      //   subject: `Thank you for the interview ${item.jobPosterName}`,
-      //   content: [
-      //     {
-      //       type: "text/html",
-      //       value: html
-      //     }
-      //   ]
-      // };
+      // console.log("Final HTML ContentRIGHTIEIFJAOIJEFOIJ", html); // Log the final HTML
 
          //   if(this.dialog === 'just-applied') {
               const msg = {
@@ -659,9 +1013,6 @@ export default {
           //  }
 
 
-
-
-
       const { data, status, error } = await useFetch("/api/sendgrid", {
         method: "POST",
         body: msg
@@ -670,9 +1021,11 @@ export default {
         this.notify('fail-send-email');
       } else {
             this.notify('success-send-email');
-            const { status, error } = await useFetch("/api/updatestatus", {
+            item = {...item, status: 'Sent'};
+            console.log("log the item going into update row in sendEmail", item);
+            const { status, error } = await useFetch("/api/updaterow", {
               method: "POST",
-              body: item.jobId
+              body: item
             });
             if(error.value === 'error') {
           } else {

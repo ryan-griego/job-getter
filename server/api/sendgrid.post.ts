@@ -2,6 +2,11 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const body = await readBody(event);
 
+  console.log("log the body in the sendGrid api", body);
+
+  console.log("GOT INTO SENDGRID API POINT");
+  //return;
+
   const sgRequest = await $fetch("https://api.sendgrid.com/v3/mail/send",
     {
       method: "POST",

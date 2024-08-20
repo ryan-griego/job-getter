@@ -32,6 +32,8 @@ export async function generateQRCodeAndUpload(url, jobId, name, companyName, job
 
     const rawValue = uploadResponseData?.data?._rawValue;
 
+    console.log('log the rawValue when in QRGenrator util', rawValue);
+
     try {
       await useFetch("/api/updateshareableurl", {
         method: "POST",

@@ -5,7 +5,7 @@ import { generateQRCodeAndUpload } from '~/utils/QRCodeGenerator';
 
 
 export default {
-  emits: ['sendEmail', 'getEmail', 'updateRow', 'deleteRow'],
+  emits: ['sendEmail', 'getEmail', 'updateRow', 'deleteRow', 'openAddContactModal'],
   props: {
       jobs: {
       type: Array,
@@ -33,7 +33,8 @@ export default {
       this.tabulator.setData(this.jobs);
     },
 
-      async generateQRCode(url, jobId, name, companyName, jobTitle) {
+   async generateQRCode(url, jobId, name, companyName, jobTitle) {
+    console.log("got into generateQRCode");
          await generateQRCodeAndUpload(url, jobId, name, companyName, jobTitle);
     },
     batchSendEmails() {
@@ -90,6 +91,16 @@ export default {
             let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail, qrCodeUrl};
             // Update the Mongo DB document using the jobId with the value of the company domain
             vueInstance.$emit('update-row', rowInfo);
+        }
+    },
+         {
+        label:"Add Contact",
+        action:function(e, row){
+            let rowData = row.getData();
+            let jobId = rowData.jobId;
+            let rowInfo = {jobId};
+            // Update the Mongo DB document using the jobId with the value of the company domain
+            vueInstance.$emit('open-add-contact-modal', rowInfo);
         }
     },
     {
@@ -156,7 +167,6 @@ export default {
 
 
 { title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
-      { title: "Company URL", field: "companyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, editor:'input'},
       { title: "Job Location", field: "jobLoscation", sorter: "string", minWidth: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
@@ -208,8 +218,34 @@ export default {
 
       { title: "Workplace Type", field: "workplaceType", sorter: "string", minWidth: 100, visible: false  },
       { title: "Job Poster Profile URL", field: "jobPosterProfileUrl", sorter: "string", minWidth: 200, visible: false },
-      { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 150, editor:'input' },
-      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", minWidth: 150, editor:'input' },
+      {
+        title: "Job Poster Name",
+        field: "jobPosterName",
+        sorter: "string",
+        minWidth: 150,
+        editor: 'input',
+        formatter: function(cell) {
+          let names = cell.getValue();
+          if (Array.isArray(names)) {
+            return names.join(", ");
+          }
+          return names;
+        }
+      },
+      {
+        title: "Job Poster Emails",
+        field: "jobPosterEmail",
+        sorter: "string",
+        editor:'input',
+        minWidth: 200,
+        formatter: function(cell) {
+          let emails = cell.getValue();
+          if (Array.isArray(emails)) {
+            return emails.join(", ");
+          }
+          return emails;
+        }
+      },
       { title: "Company Logo URL", field: "companyLogoUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Apply URL", field: "applyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Views Count", field: "viewsCount", sorter: "number", minWidth: 80, visible: false },
@@ -227,14 +263,11 @@ export default {
           field: "actions",
           width: 100,
           formatter: function (cell, formatterParams, onRendered) {
+            if(cell) {
             let rowData = cell.getRow().getData();
           if(rowData.jobPosterEmail) {
               let button = document.createElement("button");
-              button.style.padding = "2px";
-              button.style.backgroundColor = "green";
-              button.style.border = "none";
-              button.style.borderRadius = "5px";
-              button.style.cursor = "pointer";
+              button.classList.add("action-button");
               button.innerHTML = 'Send Email';
               button.addEventListener("click", (e) => {
                 vueInstance.$emit('open-email-modal', cell.getRow().getData());
@@ -242,11 +275,7 @@ export default {
               return button;
             } else if(!rowData.jobPosterEmail && rowData.companyOfficialUrl && rowData.jobPosterName) {
                 let button = document.createElement("button");
-                button.style.padding = "4px";
-                button.style.backgroundColor = "green";
-                button.style.border = "none";
-                button.style.borderRadius = "5px";
-                button.style.cursor = "pointer";
+                button.classList.add("action-button");
                 button.innerHTML = 'Get Email';
                 button.addEventListener("click", (e) => {
                   vueInstance.$emit('get-email', cell.getRow().getData());
@@ -258,6 +287,7 @@ export default {
             }
           }
         },
+        }
       ]
 
     });
@@ -271,7 +301,7 @@ export default {
 }
 </script>
 <template>
-    <!-- <button @click="batchSendEmails" style="
+<button @click="batchSendEmails" style="
   background-color: #4CAF50;
   color: white;
   border: none;
@@ -285,7 +315,7 @@ export default {
   border-radius: 5px;
 ">
   Batch send emails
-</button> -->
+</button>
   <div ref="table"></div>
 
 </template>

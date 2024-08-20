@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     await client.connect();
     const db = client.db('test');
 
-    await db.collection('jobs').updateOne(
+    await db.collection('jobs_backup').updateOne(
         { jobId: body.jobId },
         { $set: {
             companyOfficialUrl: body.domain,

@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   try {
     await client.connect();
     const db = client.db('test');
-    await db.collection('jobs').updateOne(
+    await db.collection('jobs_backup').updateOne(
       { jobId: jobId },
       { $set: { qrCodeUrl: shareableUrl } }
     );

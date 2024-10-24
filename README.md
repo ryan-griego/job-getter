@@ -1,8 +1,6 @@
 # Job Getter App
 
-
-Job Getter is a job application tracking tool designed to streamline your job search process. It allows users to store information about jobs they've applied to and easily email technical recruiters with more information about themselves.
-
+Job Getter is a job application tracking tool designed to streamline the job search process. Users can store information about jobs they have applied to and email technical recruiters with more information.
 
 ![Job Getter Screenshot](https://res.cloudinary.com/dm7y3yvjp/image/upload/v1712271923/job-getter-screenshot_lm1mtu.png)
 

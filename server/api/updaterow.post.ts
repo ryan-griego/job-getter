@@ -3,15 +3,14 @@ import { MongoClient } from 'mongodb';
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const body = await readBody(event);
-  const uri = config.mongodbUri;
+  const uri = config.keys.mongodbUri;
   const client = new MongoClient(uri);
-  console.log("log the body IN UPDAT ROW", body);
 
   try {
     await client.connect();
     const db = client.db('test');
 
-    await db.collection('jobs_backup').updateOne(
+    await db.collection('jobs').updateOne(
         { jobId: body.jobId },
         { $set: {
             companyOfficialUrl: body.domain,

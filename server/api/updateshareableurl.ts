@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  const uri = config.mongodbUri;
+  const uri = config.keys.mongodbUri;
   const client = new MongoClient(uri);
 
   try {

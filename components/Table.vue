@@ -3,9 +3,8 @@ import { TabulatorFull as Tabulator } from 'tabulator-tables';
 import { useGlobalState } from '~/composables/state';
 import { generateQRCodeAndUpload } from '~/utils/QRCodeGenerator';
 
-
 export default {
-  emits: ['sendEmail', 'getEmail', 'updateRow', 'deleteRow'],
+  emits: ['sendEmail', 'getEmail', 'updateRow', 'deleteRow', 'notify', 'openEmailModal'],
   props: {
       jobs: {
       type: Array,
@@ -18,6 +17,7 @@ export default {
   },
   data() {
     return {
+      isAdmin: false,
       tabulator: null,
       tableData: this.jobs,
       keywords: [],
@@ -37,27 +37,18 @@ export default {
          await generateQRCodeAndUpload(url, jobId, name, companyName, jobTitle);
     },
     batchSendEmails() {
-      // Get selected data
       const selectedData = this.tabulator.getSelectedData();
       const rawData = selectedData.map(row => toRaw(row));
-
-      // Filter rows based on required fields
       const filteredRows = rawData.filter(row =>
         row.jobPosterName && row.jobPosterEmail && row.companyName && row.jobTitle// && row.status === 'Applied'
       );
-      // Log the filtered rows
       console.log(filteredRows);
       const vueInstance = this;
 
       filteredRows.forEach(row => {
-        console.log("got into foreach in table");
-        console.log("log the row in foreach", row);
-        /// vueInstance.$emit('open-email-modal', row);
-
         this.$emit('sendEmail', { type: 'just-applied', payload: row });
-
       });
-      // vueInstance.$emit('open-email-modal', cell.getRow().getData());
+
     },
   },
 
@@ -65,60 +56,82 @@ export default {
 
     const vueInstance = this;
     const globalState = useGlobalState();
+    const config = useRuntimeConfig();
+    const userMode = config.public.mode;
+    const showColumn = config.public.mode === 'admin';
+    const isAdmin = userMode === 'admin';
+
     this.tabulator = new Tabulator(this.$refs.table, {
      pagination: "local",
      paginationSize: 50,
       rowContextMenu: [
     {
         label:"Delete row",
-        action:function(e, row){
-           vueInstance.$emit('delete-row', row.getData());
-           row.delete();
-        }
+        action: (e, row) => {
+          if(isAdmin) {
+            vueInstance.$emit('delete-row', row.getData());
+            row.delete();
+          } else {
+            vueInstance.$emit('notify', 'in-guest-mode');
+          }
+        },
     },
-    // NOT WORKING
      {
         label:"Update row",
         action:function(e, row){
-            let rowData = row.getData();
+          if(isAdmin) {
+                        let rowData = row.getData();
             let companyOfficialUrl = rowData.companyOfficialUrl;
             let jobId = rowData.jobId;
             let jobPosterName = rowData.jobPosterName;
             let jobPosterEmail = rowData.jobPosterEmail;
             let qrCodeUrl = rowData.qrCodeUrl;
-
             let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail, qrCodeUrl};
-            // Update the Mongo DB document using the jobId with the value of the company domain
             vueInstance.$emit('update-row', rowInfo);
+          } else {
+            vueInstance.$emit('notify', 'in-guest-mode');
+          }
         }
     },
     {
         label: 'Generate QR Code',
         action: async (e, row) => {
-          const rowData = row.getData();
-          const jobId = rowData.jobId;
-          const url = rowData.companyOfficialUrl;
-          const name = rowData.jobPosterName.split(' ')[0];
-          const companyName = rowData.companyName;
-          const jobTitle = rowData.jobTitle;
 
-          if (url && jobId && name && companyName && jobTitle) {
-            await this.generateQRCode(url, jobId, name, companyName, jobTitle);
+          if(isAdmin) {
+            const rowData = row.getData();
+            const jobId = rowData.jobId;
+            const url = rowData.companyOfficialUrl;
+            //const name = rowData.jobPosterName.split(' ')[0];
+            if(Array.isArray(rowData.jobPosterName)) {
+              name = rowData.jobPosterName[0].split(' ')[0];
+            } else {
+              name = rowData.jobPosterName.split(' ')[0];
+            }
+
+            const companyName = rowData.companyName;
+            const jobTitle = rowData.jobTitle;
+
+            if (url && jobId && name && companyName && jobTitle) {
+              await this.generateQRCode(url, jobId, name, companyName, jobTitle);
+            }
+          } else {
+            vueInstance.$emit('notify', 'in-guest-mode');
           }
         }
       },
     ],
       data: this.jobs,
       reactiveData: true,
+
       layout: "fitColumns",
       columns: [
-          {formatter:"rowSelection",
-          titleFormatter:"rowSelection", titleFormatterParams:{
-            rowRange:"active" //only toggle the values of the active filtered rows
-          },
-          hozAlign:"center",
-          headerSort:false
-          },
+          // {formatter:"rowSelection",
+          // titleFormatter:"rowSelection", titleFormatterParams:{
+          //   rowRange:"active"
+          // },
+          // hozAlign:"center",
+          // headerSort:false
+          // },
          { title: "", field: "logo",maxWidth:40, formatter: function (cell, formatterParams, onRendered) {
           let rowData = cell.getRow().getData();
           let url = rowData.companyLogoUrl ?  rowData.companyLogoUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
@@ -137,27 +150,27 @@ export default {
       { title: "Job ID", field: "jobId", sorter: "number", minWidth: 100, visible:false },
       { title: "Job Title", field: "jobTitle", sorter: "string", minWidth: 160},
       { title: "Status", field: "status", sorter: "string", minWidth: 100 },
-     { title: "QR Code Url", field: "qrCodeUrl", sorter: "string", minWidth: 100, editor:'input' },
+     { title: "QR Code Url", field: "qrCodeUrl", sorter: "string", minWidth: 100, editor: userMode === 'admin' ? 'input' : false, },
 
-{ title: "QR Code", field: "qrCodeUrl", sorter: "string", minWidth: 100,formatter: function (cell, formatterParams, onRendered) {
-                        let rowData = cell.getRow().getData();
-                        let url = rowData.qrCodeUrl ?  rowData.qrCodeUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
-                              const backupImageUrl = "https://www.ryangriego.com/assets/icons/vue.svg"; // Replace with your actual backup image URL
-                        return `
-                          <img
-                            src="${url}"
-                            style="height:40px;width:40px;"
-                            onerror="this.onerror=null;this.src='${backupImageUrl}';"
-                            alt="Company Logo"
-                          >
-                        `; },
+    { title: "QR Code", field: "qrCodeUrl", sorter: "string", minWidth: 100,formatter: function (cell, formatterParams, onRendered) {
+          let rowData = cell.getRow().getData();
+          let url = rowData.qrCodeUrl ?  rowData.qrCodeUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
+                const backupImageUrl = "https://www.ryangriego.com/assets/icons/vue.svg"; // Replace with your actual backup image URL
+          return `
+            <img
+              src="${url}"
+              style="height:40px;width:40px;"
+              onerror="this.onerror=null;this.src='${backupImageUrl}';"
+              alt="Company Logo"
+            >
+          `; },
       },
 
 
 
 { title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
       { title: "Company URL", field: "companyUrl", sorter: "string", minWidth: 200, visible: false },
-      { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, editor:'input'},
+      { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, editor: userMode === 'admin' ? 'input' : false,},
       { title: "Job Location", field: "jobLoscation", sorter: "string", minWidth: 120, visible: false },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", minWidth: 200, visible: false },
@@ -208,8 +221,8 @@ export default {
 
       { title: "Workplace Type", field: "workplaceType", sorter: "string", minWidth: 100, visible: false  },
       { title: "Job Poster Profile URL", field: "jobPosterProfileUrl", sorter: "string", minWidth: 200, visible: false },
-      { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 150, editor:'input' },
-      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", minWidth: 150, editor:'input' },
+      { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 150, editor: userMode === 'admin' ? 'input' : false, visible: userMode === 'admin' ? true : false},
+      { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", visible: userMode === 'admin' ? true : false, minWidth: 150, editor: userMode === 'admin' ? 'input' : false, },
       { title: "Company Logo URL", field: "companyLogoUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Apply URL", field: "applyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Views Count", field: "viewsCount", sorter: "number", minWidth: 80, visible: false },
@@ -237,7 +250,11 @@ export default {
               button.style.cursor = "pointer";
               button.innerHTML = 'Send Email';
               button.addEventListener("click", (e) => {
-                vueInstance.$emit('open-email-modal', cell.getRow().getData());
+                if(!isAdmin) {
+                     return vueInstance.$emit('notify', 'in-guest-mode');
+                } else {
+                vueInstance.$emit('openEmailModal', cell.getRow().getData());
+                }
               });
               return button;
             } else if(!rowData.jobPosterEmail && rowData.companyOfficialUrl && rowData.jobPosterName) {
@@ -249,29 +266,33 @@ export default {
                 button.style.cursor = "pointer";
                 button.innerHTML = 'Get Email';
                 button.addEventListener("click", (e) => {
-                  vueInstance.$emit('get-email', cell.getRow().getData());
+                  if(!isAdmin) {
+                     return vueInstance.$emit('notify', 'in-guest-mode');
+                  } else {
+                    vueInstance.$emit('get-email', cell.getRow().getData());
+                  }
+
                 });
                 return button;
             }
-            else {
-              return '';
-            }
           }
         },
-      ]
-
+      ],
     });
-    this.tabulator.on("rowDblClick", (e, row) => {
+    if(isAdmin) {
+      this.tabulator.on("rowDblClick", (e, row) => {
       let rowData = toRaw(row.getData());
       globalState.value.rowData = rowData;
-        this.tabulator.redraw(true);
-        navigateTo("/job")
+      this.tabulator.redraw(true);
+      navigateTo("/job")
     });
+    }
+
   }
 }
 </script>
 <template>
-    <!-- <button @click="batchSendEmails" style="
+  <button v-if="isAdmin" @click="batchSendEmails" style="
   background-color: #4CAF50;
   color: white;
   border: none;
@@ -285,7 +306,7 @@ export default {
   border-radius: 5px;
 ">
   Batch send emails
-</button> -->
-  <div ref="table"></div>
+</button>
+  <div ref="table" class="mb-4"></div>
 
 </template>

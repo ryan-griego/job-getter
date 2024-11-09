@@ -8,13 +8,12 @@ export default defineEventHandler(async (event) => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        "X-Phantombuster-Key": config.PHANTOMBUSTER_API_KEY
+        "X-Phantombuster-Key": config.keys.PHANTOMBUSTER_API_KEY
       },
-      body: JSON.stringify({ id: '6668119365242752' })
+      body: JSON.stringify({ id: config.keys.PHANTOMBUSTER_AGENT_ID })
     }).catch((error) => {
       console.log("log the error", error);
       return error;
     });
-    console.log("log the scraperequest", scraperRequest);
   return scraperRequest;
 });

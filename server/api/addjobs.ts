@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb';
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
   const body = await readBody(event);
-  const uri = config.mongodbUri;
+  const uri = config.keys.mongodbUri;
   const client = new MongoClient(uri);
 
   try {
@@ -11,7 +11,6 @@ export default defineEventHandler(async (event) => {
 
     const db = client.db('test');
 
-    console.log("log the type", body.type)
 
     if(body.type === "multi") {
       await db.collection('jobs').insertMany(body.data);

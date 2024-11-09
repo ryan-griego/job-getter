@@ -13,6 +13,8 @@
         <v-list-item link title="Feature Request" base-color="white"></v-list-item>
       </v-navigation-drawer> -->
   <v-container fluid pa-0 class="app-background">
+     <Modal v-if="showModal" :message="modalMessage" @close="closeModal" />
+    <h1>Welcome to My Nuxt App</h1>
     <!-- <div className="overlay-intro"></div> -->
     <div>
       <v-row class="outside-table d-flex align-end">
@@ -69,7 +71,7 @@
         <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
       </div>
       <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow"
-        @delete-row="deleteRow" :jobs="jobs_filtered" :isRemote="filters.isRemote" class="mb-4" ref="main_table" />
+        @delete-row="deleteRow" @notify="notify" :jobs="jobs_filtered" :isRemote="filters.isRemote" ref="main_table" />
       <v-dialog v-model="isEmailDialogOpen" width="auto" scrollable>
         <template v-slot:default="{ isActive }">
           <v-card prepend-icon="mdi-email-fast-outline" title="Select Email Type" dark>
@@ -153,16 +155,52 @@
 }
 </style>
 
+<!-- <script setup>
+
+const config = useRuntimeConfig();
+
+const mode = computed(() => config.public.mode);
+
+const isAdmin = computed(() => mode.value === 'admin');
+const isGuest = computed(() => mode.value === 'guest');
+</script> -->
+
 <script>
 import Table from '../components/Table.vue';
 // Dark mode
 // import 'tabulator-tables/dist/css/tabulator_midnight.min.css';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 
-  import { ref } from 'vue';
+//  import { ref } from 'vue';
+
+  import { ref, onMounted } from 'vue';
+import Modal from '~/components/Modal.vue'; // Import your modal component
 
   // Define a ref to store HTML content
   const htmlContent = ref('');
+
+
+  // Access URL Parameters
+
+//   import { computed } from 'vue';
+// import { useRoute } from 'vue-router';
+
+// const route = useRoute();
+
+// const isAdmin = computed(() => route.query.user === 'admin');
+// const isDemo = computed(() => route.query.user !== 'admin');
+
+// console.log("log the isAdmin", isAdmin);
+// console.log("log the isDemo", isDemo);
+
+///////////
+
+
+
+
+
+
+
 
 export default {
   data: () => ({
@@ -173,6 +211,7 @@ export default {
       statuses: ['Sent', 'Applied'],
     isEmailDialogOpen: false,
     isAddJobDialogOpen: false,
+    isAdmin: false,
     dialog: '',
     showFilters: false,
     rowData: {},
@@ -208,18 +247,45 @@ export default {
       experienceLevel: '',
       source: '',
     },
-  }),
+}),
 
-  async setup() {
+components: {
+    Modal,
+},
 
+async setup() {
 
+  const config = useRuntimeConfig();
+  const isAdmin = computed(() => config.public.mode === 'admin');
+  const isGuest = computed(() => config.public.mode === 'guest');
 
-    const { data: jobs } = await useFetch("/api/jobs");
-    jobs.value = toRaw(jobs.value);
-    return {
-      jobs
+  const showModal = ref(false);
+  const modalMessage = ref('This demo version of Job Getter removes most of the funtionality of the app. The user can right click a row and click the get it button to see the features available in the full app. Feel free to check out the video below of me using the app.');
+
+  const closeModal = () => {
+    showModal.value = false;
+  };
+
+  onMounted(() => {
+    if(isGuest.value) {
+      showModal.value = true;
     }
-  },
+  });
+
+  const { data: jobs } = await useFetch("/api/jobs");
+
+  jobs.value = toRaw(jobs.value);
+
+  return {
+    jobs,
+    isAdmin,
+    isGuest,
+    showModal,
+    modalMessage,
+    closeModal,
+  };
+},
+
   computed: {
     numberOfJobs() {
       return this.jobs.jobs.length;
@@ -264,11 +330,14 @@ export default {
     },
 
     takeAction(action){
+      if(!this.isAdmin) {
+       return this.notify('in-guest-mode');
+      }
       if(action === 'Run Scraper') {
-        this.runJobScraper();
+        // this.runJobScraper();
         setTimeout(() => {
         this.runJobScraper();
-      }, 1000); // Run the scraper twice
+      }, 1000); // Run the scraper after 1 second
       } else if(action === 'Fetch Jobs') {
         this.fetchNewJobs();
       } else if(action === 'Add Job') {
@@ -330,6 +399,12 @@ export default {
         case "fail-get-email":
           useNuxtApp().$toast.error('Get email failed');
           break;
+        case "fail-delete-row":
+          useNuxtApp().$toast.error('Failed to delete row');
+          break;
+        case "in-guest-mode":
+          useNuxtApp().$toast.error('Feature not available in demo mode');
+          break;
         case "fail-send-email":
           useNuxtApp().$toast.error('Send email failed');
           break;
@@ -376,6 +451,7 @@ export default {
     },
 
     async deleteRow(item) {
+
         item = toRaw(item);
         const { data, error } = await useFetch("/api/deleterow", {
           method: "POST",
@@ -398,12 +474,10 @@ export default {
       });
       if(data.value.output) {
         let output = data.value.output;
-        console.log('log the output in fetchNewJobs', output);
         let urls = output.match(/https?:\/\/[^\s]+/g);
         let lastUrl = urls[urls.length -1];
         const getJobsJson = await fetch(lastUrl);
         let jobsData = await getJobsJson.json();
-        console.log("log the jobsData", jobsData);
         // return;
         // DOUBLE CHECK THAT IF JOB POSTER INFORMATION IS COMING THROUGH THAT DUBPLICATE HEADERS ARE NOT CREATED
         jobsData = jobsData.map(job => {
@@ -485,11 +559,7 @@ export default {
       item = toRaw(item);
         try {
           const response = await fetch(`/api/getemail?domain=${item.companyOfficialUrl}&full_name=${item.jobPosterName}`);
-          console.log('log the response', response);
           let data = await response.json();
-          console.log("log the data", data);
-          console.log("log the data", data.data.email);
-
 
         if (!response.ok || !data.data.email) {
             this.notify('fail-get-email');
@@ -512,8 +582,6 @@ export default {
                 setTimeout(() => {
                   this.updateTable();
                 }, 4000);
-
-
             }
           const vueInstance = this;
           // Need to refresh the tabulator show the data
@@ -550,16 +618,19 @@ export default {
 
     async sendEmail(eventData) {
       const { type, payload } = eventData || {};
+      console.log("log type", type);
+      console.log("log payload", payload);
+      console.log("log deventData", eventData);
 
       // Determine if `eventData` is an object or if it is not provided (direct call)
       let item = this.rowData;
-      if (!item) {
-        // Handle case where `sendEmail` is called directly (no eventData)
-        item = toRaw(this.rowData);
-      } else {
-        // If eventData is provided, use item from eventData
-        item = toRaw(payload);
-      }
+      item = toRaw(this.rowData);
+
+      // if (!item) {
+      //   item = toRaw(this.rowData);
+      // } else {
+      //   item = toRaw(payload);
+      // }
      // let html = ""
       // let companyUrl = item.companyUrl;
       // let companyName = item.companyName.replace(/[^\w\s]/gi, '');
@@ -568,7 +639,15 @@ export default {
       let jobTitle = item.jobTitle;
       // let jobLocation = item.jobLocation;
       // let postedAt = item.postedAt;
-      let jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
+      let jobPosterName;
+
+      if(Array.isArray(item.jobPosterName)) {
+        jobPosterName =  item.jobPosterName[0] ? item.jobPosterName[0].split(" ")[0] : 'Hiring Manager';
+      } else {
+
+        jobPosterName = item.jobPosterName ? item.jobPosterName.split(" ")[0] : 'Hiring Manager';
+
+      }
       // let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
      // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
       let QRCodeUrl = item.qrCodeUrl ? item.qrCodeUrl : 'https://www.ryangriego.com/images/ryan-hero.jpg';
@@ -585,24 +664,38 @@ export default {
 
       await this.loadEmailTemplate(templateName);
 
-      console.log("log the QRCodeUrl", QRCodeUrl);
-      console.log("log the item.qrCodeUrl", item.qrCodeUrl);
 
       let html = htmlContent.value;
-      html = html.replace('${jobPosterName}', (item.jobPosterName ? item.jobPosterName.split(' ')[0] : 'Hiring Manager'));
+      //html = html.replace('${jobPosterName}', (item.jobPosterName[0] ? item.jobPosterName[0].split(' ')[0] : 'Hiring Manager'));
 
+
+      if(Array.isArray(item.jobPosterName)) {
+      html = html.replace('${jobPosterName}', (item.jobPosterName[0] ? item.jobPosterName[0].split(' ')[0] : 'Hiring Manager'));
+      } else {
+
+        html = html.replace('${jobPosterName}', (item.jobPosterName ? item.jobPosterName.split(' ')[0] : 'Hiring Manager'));
+
+      }
       html = html.replace('${jobTitle}', item.jobTitle || '');
       html = html.replace('${QRCodeUrl}', item.qrCodeUrl || '');
+
 
      // let jobPosterEmail = item.jobPosterEmail || 'ryangriego@gmail.com';
      //let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
 
-      let jobPosterEmail = 'ryangriego@gmail.com';
+
+      // let jobPosterEmail = 'ryangriego@gmail.com';
+      let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+
+
+      // jobPosterEmail = 'ryangriego@gmail.com';
+      // console.log('log the item.jobPosterEmail!!!!!', item.jobPosterEmail);
+      // return;
       // Replace placeholder in the HTML
       html = html.replace('{{ jobPosterEmail }}', jobPosterEmail);
       console.log("Final HTML ContentRIGHTIEIFJAOIJEFOIJ", html); // Log the final HTML
       //      let jobPosterEmail = item.jobPosterEmail ? 'ryangriego@gmail.com' : 'ryangriego@gmail.com';
-
+     // jobPosterEmail = 'ryangriegoMy power adapter the two prongs just went inside, and they're barely sticking out in any tips on how to get it working again@gmail.com';
 
       // const msg = {
       //   personalizations: [
@@ -660,7 +753,10 @@ export default {
 
 
 
+      // console.log("log the msg[personalizations]", msg['personalizations']);
+      // return;
 
+      console.log('llog the msg', msg);
 
       const { data, status, error } = await useFetch("/api/sendgrid", {
         method: "POST",

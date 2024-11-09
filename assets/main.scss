@@ -10,7 +10,6 @@ body {
     //color: white;
 }
 
-
 .app-background {
  // background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
   background-repeat: repeat-y;
@@ -21,7 +20,6 @@ body {
   background-repeat: repeat-y;
 }
 
-
 .v-main {
     // background: url('https://www.ryangriego.com/images/home-background-ryan-griego.jpeg');
     background-repeat: repeat-y;
@@ -29,7 +27,6 @@ body {
 
 .v-container {
   padding: 0px !important;
-
 }
 
 .app-heading {
@@ -45,9 +42,11 @@ body {
 
 .no-pad {
   padding: 0px !important;
-
 }
 
+.close{
+  color:green;
+}
 
 .outside-table {
   width: 80%;
@@ -67,7 +66,6 @@ body {
   opacity: .9;
   background-repeat: repeat-y;
 }
-
 
 h1, button {
   color:#fff;

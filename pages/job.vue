@@ -9,7 +9,6 @@ export default {
   setup() {
     const globalState = useGlobalState();
     const rowData = globalState.value.rowData;
-    console.log("log the row data", toRaw(rowData));
 
     return {
       rowData

@@ -13,13 +13,13 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  const uri = config.mongodbUri;
+  const uri = config.keys.mongodbUri;
   const client = new MongoClient(uri);
 
   try {
     await client.connect();
     const db = client.db('test');
-    await db.collection('jobs_backup').updateOne(
+    await db.collection('jobs').updateOne(
       { jobId: jobId },
       { $set: { qrCodeUrl: shareableUrl } }
     );

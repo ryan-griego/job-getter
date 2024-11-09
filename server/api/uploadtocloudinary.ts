@@ -4,17 +4,15 @@ const config = useRuntimeConfig();
 
 
 cloudinary.config({
-  cloud_name: config.CLOUDINARY_CLOUD_NAME,
-  api_key: config.CLOUDINARY_API_KEY,
-  api_secret: config.CLOUDINARY_API_SECRET,
+  cloud_name: config.keys.CLOUDINARY_CLOUD_NAME,
+  api_key: config.keys.CLOUDINARY_API_KEY,
+  api_secret: config.keys.CLOUDINARY_API_SECRET,
 });
 
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
     const { image, type } = body;
-
-    console.log('log the image---', image);
 
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload(
@@ -27,7 +25,6 @@ export default defineEventHandler(async (event) => {
       );
     });
 
-    console.log("log the result", result);
     return {
       statusCode: 200,
       body: { url: result.url }

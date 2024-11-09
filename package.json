@@ -7,7 +7,8 @@
     "dev": "nuxt dev --host 0.0.0.0",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "if [ \"$NODE_ENV\" != \"production\" ]; then nuxt prepare; fi",
+    "start": "node .output/server/index.mjs"
   },
   "devDependencies": {
     "@invictus.codes/nuxt-vuetify": "^0.3.0",
@@ -27,10 +28,12 @@
     "cloudinary": "^2.3.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "h3": "^1.13.0",
     "luxon": "^3.4.4",
     "mongo": "^0.1.0",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.3",
+    "nuxt": "^3.8.2",
     "qrcode": "^1.5.3",
     "sass": "^1.69.5",
     "tabulator-tables": "^5.5.2",

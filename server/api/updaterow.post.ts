@@ -10,14 +10,17 @@ export default defineEventHandler(async (event) => {
     await client.connect();
     const db = client.db('test');
 
+    console.log("log the body going in toupdate row", body);
+
     await db.collection('jobs').updateOne(
         { jobId: body.jobId },
         { $set: {
             companyOfficialUrl: body.domain,
             jobPosterName: body.jobPosterName,
             jobPosterEmail: body.jobPosterEmail,
-            qrCodeUrl: body.qrCodeUrl,
-            status: body.status,
+            qrCodeUrl: body.qrCodeUrl ?? "",
+            //status: body.status,
+            outcome: body.outcome ?? "",
           }
         }
       );

@@ -80,13 +80,14 @@ export default {
         label:"Update row",
         action:function(e, row){
           if(isAdmin) {
-                        let rowData = row.getData();
+            let rowData = row.getData();
             let companyOfficialUrl = rowData.companyOfficialUrl;
             let jobId = rowData.jobId;
             let jobPosterName = rowData.jobPosterName;
             let jobPosterEmail = rowData.jobPosterEmail;
             let qrCodeUrl = rowData.qrCodeUrl;
-            let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail, qrCodeUrl};
+            let outcome = rowData.outcome;
+            let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail, qrCodeUrl, outcome};
             vueInstance.$emit('update-row', rowInfo);
           } else {
             vueInstance.$emit('notify', 'in-guest-mode');
@@ -147,31 +148,35 @@ export default {
          }
 
         },
-      { title: "Job ID", field: "jobId", sorter: "number", minWidth: 100, visible:false },
+      { title: "Job ID", field: "jobId", sorter: "number", minWidth: 100, visible:true },
       { title: "Job Title", field: "jobTitle", sorter: "string", minWidth: 160},
+      { title: "Job Type", field: "jobType", sorter: "string", minWidth: 160},
+      { title: "Sent Follow Up1", field: "sentFollowUp1", sorter: "string", minWidth: 160},
       { title: "Status", field: "status", sorter: "string", minWidth: 100 },
-     { title: "QR Code Url", field: "qrCodeUrl", sorter: "string", minWidth: 100, editor: userMode === 'admin' ? 'input' : false, },
+      { title: "Outcome", field: "outcome", sorter: "string", minWidth: 150, editor: userMode === 'admin' ? 'input' : false, },
+    //  { title: "QR Code Url", field: "qrCodeUrl", sorter: "string", minWidth: 100, editor: userMode === 'admin' ? 'input' : false, },
 
-    { title: "QR Code", field: "qrCodeUrl", sorter: "string", minWidth: 100,formatter: function (cell, formatterParams, onRendered) {
-          let rowData = cell.getRow().getData();
-          let url = rowData.qrCodeUrl ?  rowData.qrCodeUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
-                const backupImageUrl = "https://www.ryangriego.com/assets/icons/vue.svg"; // Replace with your actual backup image URL
-          return `
-            <img
-              src="${url}"
-              style="height:40px;width:40px;"
-              onerror="this.onerror=null;this.src='${backupImageUrl}';"
-              alt="Company Logo"
-            >
-          `; },
-      },
+    // { title: "QR Code", field: "qrCodeUrl", sorter: "string", minWidth: 100,formatter: function (cell, formatterParams, onRendered) {
+    //       let rowData = cell.getRow().getData();
+    //       let url = rowData.qrCodeUrl ?  rowData.qrCodeUrl : "https://www.ryangriego.com/assets/icons/vue.svg";
+    //             const backupImageUrl = "https://www.ryangriego.com/assets/icons/vue.svg"; // Replace with your actual backup image URL
+    //       return `
+    //         <img
+    //           src="${url}"
+    //           style="height:40px;width:40px;"
+    //           onerror="this.onerror=null;this.src='${backupImageUrl}';"
+    //           alt="Company Logo"
+    //         >
+    //       `; },
+    //   },
 
 
 
 { title: "Company Name", field: "companyName", sorter: "string", minWidth: 150 },
       { title: "Company URL", field: "companyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Company Url", field: "companyOfficialUrl", sorter: "string", minWidth: 150, visible: true, editor: userMode === 'admin' ? 'input' : false,},
-      { title: "Job Location", field: "jobLoscation", sorter: "string", minWidth: 120, visible: false },
+      // { title: "Job Location", field: "jobLocation", sorter: "string", minWidth: 120, visible: false },
+      { title: "Job Type", field: "jobType", sorter: "string", minWidth: 120, visible: true },
       { title: "Posted At", field: "postedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Applies Closed At", field: "appliesClosedAt", sorter: "date", minWidth: 200, visible: false },
       { title: "Added", field: "timestamp", sorter: "date", minWidth: 100,formatter: (cell) => {

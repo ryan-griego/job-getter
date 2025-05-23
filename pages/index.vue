@@ -306,6 +306,35 @@ async setup() {
           })
           .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       }
+
+    // Filtered by ryangriego@gmail.com
+    // jobs_filtered() {
+    //   return this.jobs.jobs
+    //     .filter(job => {
+    //       let statusMatch = true;
+    //       let remoteMatch = true;
+    //       let emailMatch = false;
+
+    //       // Check status filter
+    //       if (this.filters.status) {
+    //         statusMatch = job.status === this.filters.status;
+    //       }
+
+    //       // Check remoteAllowed filter
+    //       if (this.filters.isRemote) {
+    //         remoteMatch = job.remoteAllowed === true;
+    //       }
+
+    //       // Check if jobPosterEmail contains 'ryangriego@gmail.com'
+    //       if (job.jobPosterEmail && Array.isArray(job.jobPosterEmail)) {
+    //         emailMatch = job.jobPosterEmail.includes('ryangriego@gmail.com');
+    //       }
+
+    //       return statusMatch && remoteMatch && emailMatch;
+    //     })
+    //     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // }
+
     },
 
   created() {
@@ -352,7 +381,8 @@ async setup() {
       this.timestamp = currentDate.toISOString();
       let job = this.job;
       job.timestamp = currentDate.toISOString();
-      let generateId = Number(Math.floor(Math.random() * 9000000000) + 1000000000);
+      // SHouldnt need to auto genrate ID mongo does this on its own
+      // let generateId = Number(Math.floor(Math.random() * 9000000000) + 1000000000);
       job.jobId  = generateId;
       const isValid = this.$refs.form.validate();
 
@@ -434,6 +464,9 @@ async setup() {
 
     async updateRow(item) {
       item = toRaw(item);
+      item.qrCodeUrl = item.qrCodeUrl ? item.qrCodeUrl : '';
+      item.outcome = item.outcome ? item.outcome : '';
+      console.log("log the item!!!!!!!!", item);
       const { data, error } = await useFetch("/api/updaterow", {
         method: "POST",
          body: {
@@ -441,6 +474,9 @@ async setup() {
              'domain': item.companyOfficialUrl,
              'jobPosterName': item.jobPosterName,
              'jobPosterEmail': item.jobPosterEmail,
+             'outcome': item.outcome ?? '',
+             'qrCodeUrl': item.qrCodeUrl ?? ''
+
             }
       });
       if(error.value === 'error') {
@@ -478,9 +514,14 @@ async setup() {
         let lastUrl = urls[urls.length -1];
         const getJobsJson = await fetch(lastUrl);
         let jobsData = await getJobsJson.json();
+        console.log("log the jobsData", jobsData);
         // return;
         // DOUBLE CHECK THAT IF JOB POSTER INFORMATION IS COMING THROUGH THAT DUBPLICATE HEADERS ARE NOT CREATED
         jobsData = jobsData.map(job => {
+          if(job.error) {
+            return null;
+          }
+
           if (!job.companyOfficialUrl || job.companyOfficialUrl === '') {
             let companyName = job.companyName
               .replace(/\s/g, '')
@@ -533,7 +574,8 @@ async setup() {
             companyOfficialUrl: job.companyOfficialUrl,
             status: 'Applied',
             jobPosterEmail: '',
-            source: 'LinkedIn'
+            source: 'LinkedIn',
+            sentFollowUp1: false,
           };
         });
 
@@ -680,15 +722,15 @@ async setup() {
       html = html.replace('${QRCodeUrl}', item.qrCodeUrl || '');
 
 
-     // let jobPosterEmail = item.jobPosterEmail || 'ryangriego@gmail.com';
+    //  let jobPosterEmail = item.jobPosterEmail || 'ryangriego@gmail.com';
      //let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
+
+     let jobPosterEmail = 'ryangriego@gmail.com';
+    // let jobPosterEmail = 'ryangriego730@yahoo.com';
+      // let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
 
 
       // let jobPosterEmail = 'ryangriego@gmail.com';
-      let jobPosterEmail = item.jobPosterEmail ? item.jobPosterEmail : 'ryangriego@gmail.com';
-
-
-      // jobPosterEmail = 'ryangriego@gmail.com';
       // console.log('log the item.jobPosterEmail!!!!!', item.jobPosterEmail);
       // return;
       // Replace placeholder in the HTML
@@ -737,11 +779,11 @@ async setup() {
                   email: "ryan@ryangriego.com",
                   name: `Ryan Griego / ${jobTitle}`
                 },
-                "subject": `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`,
+                "subject": `👋 Recently applied for ${jobTitle} at ${companyName}`,
                 "content": [
                   {
                     type: "text/plain",
-                    value: `👋 Recently applied for ${jobTitle} at ${companyName} - thank you for accepting my application`
+                    value: `👋 Recently applied for ${jobTitle} at ${companyName}`
                   },
                   {
                     type: "text/html",

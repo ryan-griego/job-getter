@@ -9,6 +9,9 @@ dist
 # Node dependencies
 node_modules
 
+# Ignore any “scripts” directory at project root
+/scripts/
+
 # Logs
 logs
 *.log

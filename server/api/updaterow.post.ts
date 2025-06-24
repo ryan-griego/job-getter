@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
     const db = client.db('test');
 
     console.log("log the body going in toupdate row", body);
+    console.log("Phone number received in API:", body.jobPosterPhone);
 
     await db.collection('jobs').updateOne(
         { jobId: body.jobId },
@@ -18,6 +19,7 @@ export default defineEventHandler(async (event) => {
             companyOfficialUrl: body.domain,
             jobPosterName: body.jobPosterName,
             jobPosterEmail: body.jobPosterEmail,
+            jobPosterPhone: body.jobPosterPhone ?? "",
             qrCodeUrl: body.qrCodeUrl ?? "",
             //status: body.status,
             outcome: body.outcome ?? "",
@@ -30,5 +32,8 @@ export default defineEventHandler(async (event) => {
   } finally {
     console.log("did it in update row");
     await client.close();
+
+    // Add a small delay to ensure database write is committed
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 });

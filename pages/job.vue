@@ -86,6 +86,7 @@ export default {
           <h2>Posted by:</h2>
           <h2 v-if="rowData.jobPosterName">{{ rowData.jobPosterName }}</h2>
           <p v-if="rowData.jobPosterEmail">{{ rowData.jobPosterEmail }}</p>
+          <p v-if="rowData.jobPosterPhone"><v-icon left>mdi-phone</v-icon> {{ rowData.jobPosterPhone }}</p>
           <v-btn v-if="rowData.jobPosterProfileUrl" color="primary" :href="rowData.jobPosterProfileUrl" target="_blank">Job Poster Profile Page</v-btn>
         </v-card-text>
       </v-card>

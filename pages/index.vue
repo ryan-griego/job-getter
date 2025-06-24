@@ -71,7 +71,7 @@
         <p class="p-1 outside-table">Total # of jobs {{ numberOfJobs }}</p>
       </div>
       <Table @open-email-modal="openEmailModal" @send-email="sendEmail" @get-email="getEmail" @update-row="updateRow"
-        @delete-row="deleteRow" @notify="notify" :jobs="jobs_filtered" :isRemote="filters.isRemote" ref="main_table" />
+        @delete-row="deleteRow" @mark-as-called="markAsCalled" @notify="notify" :jobs="jobs_filtered" :isRemote="filters.isRemote" ref="main_table" />
       <v-dialog v-model="isEmailDialogOpen" width="auto" scrollable>
         <template v-slot:default="{ isActive }">
           <v-card prepend-icon="mdi-email-fast-outline" title="Select Email Type" dark>
@@ -114,6 +114,13 @@
                 <v-text-field v-model="job.jobPosterProfileUrl" label="Job Poster Profile URL"></v-text-field>
                 <v-text-field v-model="job.jobPosterName" label="Job Poster Name"></v-text-field>
                 <v-text-field v-model="job.jobPosterEmail" label="Job Poster Email"></v-text-field>
+                <v-text-field
+                  v-model="job.jobPosterPhone"
+                  label="Job Poster Phone"
+                  placeholder="(555) 123-4567"
+                  @blur="formatPhoneInput"
+                  :rules="phoneRules"
+                ></v-text-field>
                 <v-text-field v-model="job.companyLogoUrl" label="Company Logo URL"></v-text-field>
                 <v-text-field v-model="job.applyUrl" label="Apply URL"></v-text-field>
                 <v-text-field v-model="job.viewsCount" label="Views Count"></v-text-field>
@@ -208,7 +215,7 @@ export default {
         isRemote: false,
         status: null,
       },
-      statuses: ['Sent', 'Applied'],
+      statuses: ['Sent', 'Applied', 'Called'],
     isEmailDialogOpen: false,
     isAddJobDialogOpen: false,
     isAdmin: false,
@@ -223,6 +230,7 @@ export default {
       ],
     jobs: [],
     valid: true,
+    isUpdatingRow: false,
     job: {
       jobId: '',
       jobTitle: '',
@@ -234,6 +242,7 @@ export default {
       workplaceType: '',
       jobPosterName: '',
       jobPosterEmail: '',
+      jobPosterPhone: '',
       companyLogoUrl: '',
       applyUrl: '',
       viewsCount: '',
@@ -247,6 +256,9 @@ export default {
       experienceLevel: '',
       source: '',
     },
+    phoneRules: [
+      v => !v || v.length === 0 || /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.test(v.replace(/\D/g, '').replace(/^1/, '')) || 'Phone number must be valid (e.g., (555) 123-4567)',
+    ],
 }),
 
 components: {
@@ -358,6 +370,32 @@ async setup() {
     initialize() {
     },
 
+    // Phone number formatting and validation
+    formatPhoneInput() {
+      if (this.job.jobPosterPhone) {
+        this.job.jobPosterPhone = this.formatPhoneNumber(this.job.jobPosterPhone);
+      }
+    },
+
+    formatPhoneNumber(phoneNumber) {
+      if (!phoneNumber) return '';
+
+      // Remove all non-digit characters
+      const cleaned = phoneNumber.replace(/\D/g, '');
+
+      // Handle different lengths
+      if (cleaned.length === 10) {
+        // Format as (XXX) XXX-XXXX
+        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+      } else if (cleaned.length === 11 && cleaned[0] === '1') {
+        // Handle US numbers with country code
+        return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+      }
+
+      // Return as-is if it doesn't match expected patterns
+      return phoneNumber;
+    },
+
     takeAction(action){
       if(!this.isAdmin) {
        return this.notify('in-guest-mode');
@@ -445,6 +483,12 @@ async setup() {
         case "success-get-email":
           useNuxtApp().$toast.success('Email received');
           break;
+        case "fail-mark-as-called":
+          useNuxtApp().$toast.error('Failed to mark as called');
+          break;
+        case "success-mark-as-called":
+          useNuxtApp().$toast.success('Job marked as called');
+          break;
         default:
           useNuxtApp().$toast.error('Notify by click - test');
       }
@@ -463,10 +507,13 @@ async setup() {
     },
 
     async updateRow(item) {
+      this.isUpdatingRow = true;
       item = toRaw(item);
       item.qrCodeUrl = item.qrCodeUrl ? item.qrCodeUrl : '';
       item.outcome = item.outcome ? item.outcome : '';
+      item.jobPosterPhone = item.jobPosterPhone ? item.jobPosterPhone : '';
       console.log("log the item!!!!!!!!", item);
+      console.log("Phone number being saved:", item.jobPosterPhone);
       const { data, error } = await useFetch("/api/updaterow", {
         method: "POST",
          body: {
@@ -474,6 +521,7 @@ async setup() {
              'domain': item.companyOfficialUrl,
              'jobPosterName': item.jobPosterName,
              'jobPosterEmail': item.jobPosterEmail,
+             'jobPosterPhone': item.jobPosterPhone ?? '',
              'outcome': item.outcome ?? '',
              'qrCodeUrl': item.qrCodeUrl ?? ''
 
@@ -482,8 +530,11 @@ async setup() {
       if(error.value === 'error') {
         this.notify('fail-update-row');
       } else {
-        this.updateTable();
+        // Don't auto-refresh table for cell edits to avoid overwriting changes
+        // The table already has the updated data from the user's edit
+        console.log("Update successful - skipping table refresh to preserve changes");
       }
+      this.isUpdatingRow = false;
     },
 
     async deleteRow(item) {
@@ -502,6 +553,34 @@ async setup() {
           // NEED TO ADD SUCCESS NOTIFICATION HERE
           console.log("deleteRow was a success");
         }
+    },
+
+    async markAsCalled(item) {
+      item = toRaw(item);
+      console.log("Marking job as Called:", item.jobId);
+
+      const { data, error } = await useFetch("/api/updatestatus", {
+        method: "POST",
+        body: {
+          jobId: item.jobId,
+          status: 'Called'
+        }
+      });
+
+      if(error.value === 'error') {
+        this.notify('fail-mark-as-called');
+      } else {
+        this.notify('success-mark-as-called');
+        // Update the local data to reflect the change immediately
+        const jobIndex = this.jobs.jobs.findIndex(job => job.jobId === item.jobId);
+        if (jobIndex !== -1) {
+          this.jobs.jobs[jobIndex].status = 'Called';
+        }
+        // Refresh the table to show the updated status
+        setTimeout(() => {
+          this.updateTable();
+        }, 100);
+      }
     },
 
     async fetchNewJobs() {
@@ -574,6 +653,7 @@ async setup() {
             companyOfficialUrl: job.companyOfficialUrl,
             status: 'Applied',
             jobPosterEmail: '',
+            jobPosterPhone: '',
             source: 'LinkedIn',
             sentFollowUp1: false,
           };

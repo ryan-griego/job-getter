@@ -11,7 +11,18 @@ export default defineEventHandler(async (event) => {
 
     const db = client.db('test');
 
-    await db.collection('jobs').updateOne({ jobId: body }, { $set: { status: 'Sent' } });
+    // Handle both old format (just jobId) and new format (object with jobId and status)
+    let jobId, status;
+    if (typeof body === 'object' && body.jobId) {
+      jobId = body.jobId;
+      status = body.status || 'Sent'; // Default to 'Sent' for backward compatibility
+    } else {
+      jobId = body; // Old format - just the jobId
+      status = 'Sent'; // Default status
+    }
+
+    console.log(`Updating job ${jobId} status to: ${status}`);
+    await db.collection('jobs').updateOne({ jobId: jobId }, { $set: { status: status } });
 
   } catch (error) {
     console.error('Error connecting to MongoDB:', error);

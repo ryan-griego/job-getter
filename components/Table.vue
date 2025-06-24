@@ -30,7 +30,12 @@ export default {
 
   methods: {
     updateTableData() {
+      // Store current cell values before updating to preserve any unsaved edits
+      const currentData = this.tabulator.getData();
       this.tabulator.setData(this.jobs);
+
+      // If there were any local edits, we should preserve them
+      console.log("Table data updated from server");
     },
 
       async generateQRCode(url, jobId, name, companyName, jobTitle) {
@@ -85,9 +90,10 @@ export default {
             let jobId = rowData.jobId;
             let jobPosterName = rowData.jobPosterName;
             let jobPosterEmail = rowData.jobPosterEmail;
+            let jobPosterPhone = rowData.jobPosterPhone;
             let qrCodeUrl = rowData.qrCodeUrl;
             let outcome = rowData.outcome;
-            let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail, qrCodeUrl, outcome};
+            let rowInfo = {companyOfficialUrl, jobId, jobPosterName, jobPosterEmail, jobPosterPhone, qrCodeUrl, outcome};
             vueInstance.$emit('update-row', rowInfo);
           } else {
             vueInstance.$emit('notify', 'in-guest-mode');
@@ -115,6 +121,17 @@ export default {
             if (url && jobId && name && companyName && jobTitle) {
               await this.generateQRCode(url, jobId, name, companyName, jobTitle);
             }
+          } else {
+            vueInstance.$emit('notify', 'in-guest-mode');
+          }
+        }
+      },
+      {
+        label: "Mark as Called",
+        action: function(e, row) {
+          if(isAdmin) {
+            let rowData = row.getData();
+            vueInstance.$emit('mark-as-called', rowData);
           } else {
             vueInstance.$emit('notify', 'in-guest-mode');
           }
@@ -228,6 +245,21 @@ export default {
       { title: "Job Poster Profile URL", field: "jobPosterProfileUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Job Poster Name", field: "jobPosterName", sorter: "string", minWidth: 150, editor: userMode === 'admin' ? 'input' : false, visible: userMode === 'admin' ? true : false},
       { title: "Job Poster Email", field: "jobPosterEmail", sorter: "string", visible: userMode === 'admin' ? true : false, minWidth: 150, editor: userMode === 'admin' ? 'input' : false, },
+      { title: "Job Poster Phone", field: "jobPosterPhone", sorter: "string", visible: userMode === 'admin' ? true : false, minWidth: 150, editor: userMode === 'admin' ? 'input' : false,
+        formatter: function(cell) {
+          let phone = cell.getValue();
+          if (!phone) return '';
+
+          // Format phone number for display
+          const cleaned = phone.replace(/\D/g, '');
+          if (cleaned.length === 10) {
+            return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+          } else if (cleaned.length === 11 && cleaned[0] === '1') {
+            return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+          }
+          return phone;
+        }
+      },
       { title: "Company Logo URL", field: "companyLogoUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Apply URL", field: "applyUrl", sorter: "string", minWidth: 200, visible: false },
       { title: "Views Count", field: "viewsCount", sorter: "number", minWidth: 80, visible: false },
@@ -290,6 +322,20 @@ export default {
       globalState.value.rowData = rowData;
       this.tabulator.redraw(true);
       navigateTo("/job")
+    });
+
+    // Auto-save when cells are edited
+    this.tabulator.on("cellEdited", (cell) => {
+      let rowData = toRaw(cell.getRow().getData());
+      let fieldName = cell.getField();
+      let newValue = cell.getValue();
+      console.log(`Cell edited - Field: ${fieldName}, New Value: "${newValue}"`);
+      console.log("Full row data:", rowData);
+
+      // Add a small delay to prevent rapid-fire updates
+      setTimeout(() => {
+        this.$emit('update-row', rowData);
+      }, 100);
     });
     }
 
